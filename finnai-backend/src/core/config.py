@@ -41,10 +41,40 @@ class Settings(BaseSettings):
     redis_url: str | None = Field(default=None, validation_alias="REDIS_URL")
     celery_broker_url: str | None = Field(default=None, validation_alias="CELERY_BROKER_URL")
 
+    google_client_id: str = Field(
+        default="",
+        validation_alias="GOOGLE_CLIENT_ID",
+    )
+    jwt_secret_key: str = Field(
+        default="change-me-access-secret",
+        validation_alias="JWT_SECRET_KEY",
+    )
+    jwt_refresh_secret_key: str = Field(
+        default="change-me-refresh-secret",
+        validation_alias="JWT_REFRESH_SECRET_KEY",
+    )
+    access_token_expire_minutes: int = Field(
+        default=15,
+        validation_alias="ACCESS_TOKEN_EXPIRE_MINUTES",
+    )
+    refresh_token_expire_days: int = Field(
+        default=30,
+        validation_alias="REFRESH_TOKEN_EXPIRE_DAYS",
+    )
+    auth_cookie_name: str = Field(default="refresh_token", validation_alias="AUTH_COOKIE_NAME")
+    auth_cookie_secure: bool = Field(default=False, validation_alias="AUTH_COOKIE_SECURE")
+    auth_cookie_samesite: str = Field(default="lax", validation_alias="AUTH_COOKIE_SAMESITE")
+    auth_cookie_domain: str | None = Field(default=None, validation_alias="AUTH_COOKIE_DOMAIN")
+
 
 @lru_cache
 def get_settings() -> Settings:
     settings = Settings()
     if settings.app_env == AppEnvironment.production:
         settings.debug = False
+        settings.auth_cookie_secure = True
     return settings
+
+
+def clear_settings_cache() -> None:
+    get_settings.cache_clear()
