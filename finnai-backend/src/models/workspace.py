@@ -19,6 +19,7 @@ class Workspace(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     slug: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
+    timezone: Mapped[str] = mapped_column(String(64), nullable=False, default="UTC")
     owner_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True),
         ForeignKey("users.id", ondelete="RESTRICT"),

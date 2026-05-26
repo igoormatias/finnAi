@@ -202,6 +202,69 @@ curl "http://localhost:8000/workspaces/familia-silva/transactions?limit=50&offse
 - `monthly_balance_cents`: \(incomes - expenses\)
 - `savings_rate`: \(0\) se `incomes=0`, senão \(monthly_balance / incomes\)
 
+## Relatórios, analytics e dashboard (Fase 5)
+
+### Timezone por workspace
+
+- Workspaces possuem `timezone` (default `UTC`) e ele é usado para interpretar `start_date/end_date` e comparações mensais.
+
+### Dashboard endpoints
+
+- `GET /workspaces/{slug}/dashboard/overview`
+- `GET /workspaces/{slug}/dashboard/cashflow`
+- `GET /workspaces/{slug}/dashboard/categories`
+- `GET /workspaces/{slug}/dashboard/trends`
+- `GET /workspaces/{slug}/dashboard/accounts`
+
+### Overview
+
+Retorna:
+- `total_balance_cents`
+- `monthly_income_cents`
+- `monthly_expense_cents`
+- `savings_cents`
+- `savings_rate`
+- `transaction_count`
+- `biggest_expense`
+- `biggest_income`
+
+### Cashflow
+
+Query params:
+- `start_date`, `end_date` (ISO datetime)
+- `granularity`: `daily|weekly|monthly|yearly`
+
+Retorna série temporal com:
+- `income_cents`, `expense_cents`, `cumulative_balance_cents`
+
+### Category analytics
+
+Query params:
+- `start_date`, `end_date` (ISO datetime)
+- `type`: `income|expense`
+
+Retorna ranking/percentual por categoria.
+
+### Exportação
+
+- `GET /workspaces/{slug}/reports/export/csv`
+- `GET /workspaces/{slug}/reports/export/xlsx`
+
+Filtros (query params):
+- `start_date`, `end_date`
+- `type` (`income|expense`)
+- `category_id`, `account_id`
+- `amount_min_cents`, `amount_max_cents`
+- `search`
+
+Exemplo:
+
+```bash
+curl "http://localhost:8000/workspaces/familia-silva/reports/export/csv?start_date=2026-01-01T00:00:00Z&end_date=2026-01-31T23:59:59Z&type=expense" \
+  -H "Authorization: Bearer <access_token>" \
+  -o export.csv
+```
+
 ## Variáveis de ambiente
 
 Copie o exemplo:
