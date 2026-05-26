@@ -65,6 +65,7 @@ class Settings(BaseSettings):
     auth_cookie_secure: bool = Field(default=False, validation_alias="AUTH_COOKIE_SECURE")
     auth_cookie_samesite: str = Field(default="lax", validation_alias="AUTH_COOKIE_SAMESITE")
     auth_cookie_domain: str | None = Field(default=None, validation_alias="AUTH_COOKIE_DOMAIN")
+    invite_expire_days: int = Field(default=7, validation_alias="INVITE_EXPIRE_DAYS")
 
 
 @lru_cache

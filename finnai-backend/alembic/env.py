@@ -9,6 +9,9 @@ from core.config import get_settings
 from models.auth_session import AuthSession  # noqa: F401
 from models.base import Base
 from models.user import User  # noqa: F401
+from models.workspace import Workspace  # noqa: F401
+from models.workspace_invite import WorkspaceInvite  # noqa: F401
+from models.workspace_membership import WorkspaceMembership  # noqa: F401
 
 config = context.config
 

@@ -83,6 +83,59 @@ curl http://localhost:8000/auth/me \
   -H "Authorization: Bearer <access_token>"
 ```
 
+## Workspaces colaborativos (Fase 3)
+
+### Conceito
+
+Usuários podem criar e participar de múltiplos workspaces (famílias) para colaborar em finanças compartilhadas.
+
+### Roles e permissões
+
+| Role | Permissões |
+|------|------------|
+| owner | Acesso total; deletar workspace |
+| admin | Gerenciar membros e convites; editar workspace |
+| member | Acesso colaborativo (criar/editar finanças nas próximas fases) |
+| viewer | Somente leitura |
+
+### Endpoints principais
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| POST | `/workspaces` | Criar workspace |
+| GET | `/workspaces` | Listar workspaces do usuário |
+| GET | `/workspaces/{slug}` | Detalhes (membro) |
+| PATCH | `/workspaces/{slug}` | Atualizar (admin/owner) |
+| DELETE | `/workspaces/{slug}` | Deletar (owner) |
+| GET | `/workspaces/{slug}/members` | Listar membros |
+| PATCH | `/workspaces/{slug}/members/{member_id}` | Alterar role (admin/owner) |
+| DELETE | `/workspaces/{slug}/members/{member_id}` | Remover membro (admin/owner) |
+| POST | `/workspaces/{slug}/invites` | Criar convite (admin/owner) |
+| GET | `/workspaces/{slug}/invites` | Listar convites (admin/owner) |
+| DELETE | `/workspaces/{slug}/invites/{invite_id}` | Cancelar convite |
+| POST | `/invites/{token}/accept` | Aceitar convite (autenticado) |
+
+### Fluxo de convite
+
+1. Admin/owner cria convite com email e role desejada.
+2. Backend gera token único com expiração (`INVITE_EXPIRE_DAYS`).
+3. Usuário convidado faz login e chama `POST /invites/{token}/accept`.
+4. Backend valida email, expiração e cria membership.
+
+### Exemplo
+
+```bash
+curl -X POST http://localhost:8000/workspaces \
+  -H "Authorization: Bearer <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Familia Silva"}'
+
+curl -X POST http://localhost:8000/workspaces/familia-silva/invites \
+  -H "Authorization: Bearer <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"invited_email":"membro@example.com","role":"member"}'
+```
+
 ## Variáveis de ambiente
 
 Copie o exemplo:

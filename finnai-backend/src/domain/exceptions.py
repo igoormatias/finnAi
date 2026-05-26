@@ -17,3 +17,35 @@ class UnauthorizedException(DomainException):
 
 class UserNotFoundException(DomainException):
     pass
+
+
+class WorkspaceNotFoundException(DomainException):
+    pass
+
+
+class ForbiddenException(DomainException):
+    pass
+
+
+class InviteNotFoundException(DomainException):
+    pass
+
+
+class InviteExpiredException(DomainException):
+    pass
+
+
+class InviteAlreadyAcceptedException(DomainException):
+    pass
+
+
+class InviteEmailMismatchException(DomainException):
+    pass
+
+
+class DuplicateInviteException(DomainException):
+    pass
+
+
+class MembershipNotFoundException(DomainException):
+    pass

@@ -44,12 +44,21 @@ class FakeGoogleTokenVerifier:
 
             raise GoogleTokenValidationError("Invalid Google token")
 
+        if id_token.startswith("email:"):
+            email = id_token.split(":", 1)[1]
+            name = email.split("@")[0].replace(".", " ").title()
+            sub = f"google-{email}"
+        else:
+            email = "user@example.com"
+            name = "Test User"
+            sub = "google-user-123"
+
         return GoogleTokenInfo.model_validate(
             {
-                "sub": "google-user-123",
-                "email": "user@example.com",
+                "sub": sub,
+                "email": email,
                 "email_verified": True,
-                "name": "Test User",
+                "name": name,
                 "picture": "https://example.com/avatar.png",
                 "aud": TEST_GOOGLE_CLIENT_ID,
                 "exp": int((datetime.now(UTC) + timedelta(hours=1)).timestamp()),
@@ -67,6 +76,9 @@ async def db_session(tmp_path) -> AsyncGenerator[AsyncSession, None]:
         from models import (
             auth_session as _auth_session,  # noqa: F401
             user as _user,  # noqa: F401
+            workspace as _workspace,  # noqa: F401
+            workspace_invite as _workspace_invite,  # noqa: F401
+            workspace_membership as _workspace_membership,  # noqa: F401
         )
 
         await connection.run_sync(Base.metadata.create_all)
