@@ -30,18 +30,20 @@ export function SheetContent({
   side = "left",
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
-  side?: "left" | "right";
+  side?: "left" | "right" | "bottom";
 }) {
   return (
     <SheetPortal>
       <SheetOverlay />
       <DialogPrimitive.Content
         className={cn(
-          "fixed z-50 h-full w-[min(320px,calc(100vw-3rem))] border border-border bg-surface/90 p-4 shadow-elevated backdrop-blur-md",
+          "fixed z-50 border border-border bg-surface/90 shadow-elevated backdrop-blur-md",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-300",
           side === "left"
-            ? "left-0 top-0 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left"
-            : "right-0 top-0 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
+            ? "left-0 top-0 h-full w-[min(360px,calc(100vw-3rem))] p-4 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left"
+            : side === "right"
+              ? "right-0 top-0 h-full w-[min(360px,calc(100vw-3rem))] p-4 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right"
+              : "bottom-0 left-0 right-0 max-h-[85vh] w-full rounded-t-2xl p-4 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
           className
         )}
         {...props}

@@ -18,4 +18,10 @@ export const queryKeys = {
     transactions: (slug: string) => ["dashboard", slug, "transactions"] as const,
     score: (slug: string) => ["dashboard", slug, "score"] as const,
   },
+  finance: {
+    categories: (slug: string) => ["finance", slug, "categories"] as const,
+    accounts: (slug: string) => ["finance", slug, "accounts"] as const,
+    transactions: (slug: string, key: string) => ["finance", slug, "transactions", key] as const,
+    transaction: (slug: string, id: string) => ["finance", slug, "transaction", id] as const,
+  },
 } as const;

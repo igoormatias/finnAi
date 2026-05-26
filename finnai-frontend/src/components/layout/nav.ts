@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
   BarChart3,
+  FolderKanban,
   Gauge,
   LayoutDashboard,
   Target,
@@ -27,9 +28,21 @@ export function buildNavItems(slug: string): AppNavItem[] {
       icon: LayoutDashboard,
     },
     {
-      section: "gastos",
-      href: workspacePath(slug, "gastos"),
+      section: "transactions",
+      href: workspacePath(slug, "transactions"),
       label: "Gastos",
+      icon: Wallet,
+    },
+    {
+      section: "categories",
+      href: workspacePath(slug, "categories"),
+      label: "Categorias",
+      icon: FolderKanban,
+    },
+    {
+      section: "accounts",
+      href: workspacePath(slug, "accounts"),
+      label: "Contas",
       icon: Wallet,
     },
     {

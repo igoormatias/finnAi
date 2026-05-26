@@ -1,8 +1,8 @@
-export default function GastosPage() {
-  return (
-    <section className="grid gap-2">
-      <h1 className="text-xl font-semibold tracking-tight">Gastos</h1>
-      <p className="text-sm text-muted">Página placeholder — próxima fase.</p>
-    </section>
-  );
+import { redirect } from "next/navigation";
+
+import { workspacePath } from "@/shared/config/routes";
+
+export default async function GastosPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  redirect(workspacePath(slug, "transactions"));
 }

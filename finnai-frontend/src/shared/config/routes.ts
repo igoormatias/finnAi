@@ -7,7 +7,10 @@ export const ROUTES = {
 
 export type WorkspaceSection =
   | "dashboard"
+  | "transactions"
   | "gastos"
+  | "categories"
+  | "accounts"
   | "score"
   | "metas"
   | "relatorios"
@@ -53,7 +56,10 @@ export function getWorkspaceSectionFromPath(pathname: string): WorkspaceSection 
   const section = match?.[1];
   if (
     section === "dashboard" ||
+    section === "transactions" ||
     section === "gastos" ||
+    section === "categories" ||
+    section === "accounts" ||
     section === "score" ||
     section === "metas" ||
     section === "relatorios" ||
