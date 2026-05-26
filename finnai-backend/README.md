@@ -265,6 +265,38 @@ curl "http://localhost:8000/workspaces/familia-silva/reports/export/csv?start_da
   -o export.csv
 ```
 
+## FinnAI Score (Fase 6 — IA financeira)
+
+### Objetivo
+
+Gerar um **score financeiro (0–100)** por workspace, com:
+- `label`
+- `summary`
+- `strengths`, `weaknesses`, `tips`
+- `badges`
+
+### Provider (atual) e troca futura
+
+- Provider atual: **Google Gemini API** (`AI_PROVIDER=gemini`).
+- Arquitetura preparada para suportar providers futuros (OpenAI/Claude/OpenRouter) sem acoplar o domínio.
+
+### Endpoints
+
+- `GET /workspaces/{slug}/ai/score`
+- `POST /workspaces/{slug}/ai/regenerate` (retorna **202**)
+
+### Cache / debounce (baixo custo)
+
+- O score é **persistido no banco** e reutilizado.\n+- `POST regenerate` aplica **debounce** para evitar múltiplas gerações seguidas (configurável por `AI_SCORE_DEBOUNCE_SECONDS`).\n+- Se a IA falhar, o sistema mantém o **último score válido** (e registra erro no estado do score).
+
+### Variáveis de ambiente (IA)
+
+- `AI_PROVIDER` (default: `gemini`)
+- `AI_MODEL` (opcional)
+- `GEMINI_API_KEY`
+- `GEMINI_MODEL` (opcional)
+- `AI_SCORE_DEBOUNCE_SECONDS` (default: `600`)
+
 ## Variáveis de ambiente
 
 Copie o exemplo:

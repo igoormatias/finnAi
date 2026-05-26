@@ -1,0 +1,53 @@
+/* FinnAI design tokens (v1) — dark premium fintech */
+
+:root {
+  /* Brand */
+  --color-primary: #35e0a1;
+  --color-secondary: #10b981;
+  --color-tertiary: #fc7c78;
+
+  /* Neutrals */
+  --color-neutral-950: #0b0c0f;
+  --color-neutral-900: #0f1116;
+  --color-neutral-850: #12151c;
+  --color-neutral-800: #171b24;
+  --color-neutral-700: #232a36;
+  --color-neutral-600: #2f3947;
+  --color-neutral-500: #596579;
+  --color-neutral-300: #a4afc1;
+  --color-neutral-100: #e7edf6;
+
+  /* Semantic surfaces */
+  --bg: var(--color-neutral-950);
+  --surface: color-mix(in oklab, var(--color-neutral-900), white 3%);
+  --elevated: color-mix(in oklab, var(--color-neutral-850), white 6%);
+  --border: color-mix(in oklab, var(--color-neutral-700), white 8%);
+  --muted: var(--color-neutral-500);
+  --foreground: var(--color-neutral-100);
+
+  /* Status */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: var(--color-tertiary);
+
+  /* Radius + shadow */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --shadow-elevated: 0 16px 60px rgba(0, 0, 0, 0.55);
+
+  /* Glow */
+  --glow-primary: 0 0 0 1px color-mix(in oklab, var(--color-primary), transparent 70%),
+    0 0 40px color-mix(in oklab, var(--color-primary), transparent 75%);
+}
+
+html.light {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --elevated: #f6f7fb;
+  --border: #e6e8ef;
+  --muted: #5b6475;
+  --foreground: #0b0c0f;
+}
+

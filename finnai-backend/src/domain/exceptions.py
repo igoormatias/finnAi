@@ -61,3 +61,15 @@ class AccountNotFoundException(DomainException):
 
 class TransactionNotFoundException(DomainException):
     pass
+
+
+class AIScoreNotFoundException(DomainException):
+    pass
+
+
+class AIProviderException(DomainException):
+    pass
+
+
+class AIParseException(DomainException):
+    pass

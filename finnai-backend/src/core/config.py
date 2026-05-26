@@ -67,6 +67,14 @@ class Settings(BaseSettings):
     auth_cookie_domain: str | None = Field(default=None, validation_alias="AUTH_COOKIE_DOMAIN")
     invite_expire_days: int = Field(default=7, validation_alias="INVITE_EXPIRE_DAYS")
 
+    ai_provider: str = Field(default="gemini", validation_alias="AI_PROVIDER")
+    ai_model: str | None = Field(default=None, validation_alias="AI_MODEL")
+    gemini_api_key: str | None = Field(default=None, validation_alias="GEMINI_API_KEY")
+    gemini_model: str | None = Field(default=None, validation_alias="GEMINI_MODEL")
+    ai_score_debounce_seconds: int = Field(
+        default=600, validation_alias="AI_SCORE_DEBOUNCE_SECONDS"
+    )
+
 
 @lru_cache
 def get_settings() -> Settings:

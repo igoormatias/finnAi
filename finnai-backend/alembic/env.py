@@ -13,6 +13,7 @@ from models.category import Category  # noqa: F401
 from models.transaction import Transaction  # noqa: F401
 from models.user import User  # noqa: F401
 from models.workspace import Workspace  # noqa: F401
+from models.workspace_financial_score import WorkspaceFinancialScore  # noqa: F401
 from models.workspace_invite import WorkspaceInvite  # noqa: F401
 from models.workspace_membership import WorkspaceMembership  # noqa: F401
 

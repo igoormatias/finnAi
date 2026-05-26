@@ -131,8 +131,8 @@ export default function Page() {
 ## 📱💻 Responsividade (OBRIGATÓRIO)
 
 ### Regra
-- O site deve ser **responsivo**.
-- **Desktop não pode ser “mobile esticado”**: precisa de layout pensado para desktop.
+- O site deve ser **responsivo** e **mobile-first**.
+- **Os prints em `assets/` são referência visual oficial, mas são majoritariamente desktop**.\n+  Portanto, toda tela deve:\n+  - ser implementada com base no desktop\n+  - e **adaptada para mobile/tablet** (não “espremer” desktop no mobile)\n+  - **simplificando a navegação** quando necessário (ex.: sidebar → drawer; menus → bottom nav; reduzir densidade e reordenar cards)\n+- **Desktop não pode ser “mobile esticado”**: precisa de layout pensado para desktop.\n+- **Mobile não pode ser “desktop comprimido”**: precisa de UX próprio.
 
 ### Breakpoints
 - **Desktop**: `>= 1024px` (`lg:`)

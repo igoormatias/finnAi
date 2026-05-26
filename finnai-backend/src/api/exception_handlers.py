@@ -5,6 +5,9 @@ from fastapi.responses import JSONResponse
 
 from domain.exceptions import (
     AccountNotFoundException,
+    AIParseException,
+    AIProviderException,
+    AIScoreNotFoundException,
     CategoryNotFoundException,
     DomainException,
     DuplicateInviteException,
@@ -70,6 +73,18 @@ def register_exception_handlers(app: FastAPI) -> None:
         _: Request, exc: TransactionNotFoundException
     ) -> JSONResponse:
         return JSONResponse(status_code=404, content={"detail": exc.message})
+
+    @app.exception_handler(AIScoreNotFoundException)
+    async def ai_score_not_found_handler(_: Request, exc: AIScoreNotFoundException) -> JSONResponse:
+        return JSONResponse(status_code=404, content={"detail": exc.message})
+
+    @app.exception_handler(AIProviderException)
+    async def ai_provider_handler(_: Request, exc: AIProviderException) -> JSONResponse:
+        return JSONResponse(status_code=502, content={"detail": exc.message})
+
+    @app.exception_handler(AIParseException)
+    async def ai_parse_handler(_: Request, exc: AIParseException) -> JSONResponse:
+        return JSONResponse(status_code=502, content={"detail": exc.message})
 
     @app.exception_handler(InviteExpiredException)
     async def invite_expired_handler(_: Request, exc: InviteExpiredException) -> JSONResponse:

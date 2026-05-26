@@ -56,6 +56,16 @@ FinnAI/
 
 Aplicação web responsável pela experiência do usuário.
 
+## Referência visual (prints) e responsividade (OBRIGATÓRIO)
+
+- Os **prints em `finnai-frontend/assets/` são referência visual oficial** (identidade, spacing, tipografia, hierarquia e composição).
+- **Os prints são majoritariamente desktop**. Mesmo assim, **todas as telas devem ser mobile-first e responsivas**.
+- Regra de implementação:
+  - Desenvolver a versão **desktop** baseada nos prints
+  - Em seguida **adaptar para mobile/tablet** seguindo boas práticas (não “espremer” o desktop)
+  - **Simplificar** quando necessário: trocar sidebar por drawer/bottom nav, reduzir densidade de informação, reorganizar grids, priorizar conteúdo, ajustar CTAs.
+  - Garantir a11y e suporte a **reduced motion**.
+
 ## Stack
 
 - Next.js (App Router)
