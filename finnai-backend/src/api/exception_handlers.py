@@ -4,6 +4,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from domain.exceptions import (
+    AccountNotFoundException,
+    CategoryNotFoundException,
     DomainException,
     DuplicateInviteException,
     ForbiddenException,
@@ -13,6 +15,7 @@ from domain.exceptions import (
     InviteExpiredException,
     InviteNotFoundException,
     MembershipNotFoundException,
+    TransactionNotFoundException,
     UnauthorizedException,
     UserNotFoundException,
     WorkspaceNotFoundException,
@@ -49,6 +52,22 @@ def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(MembershipNotFoundException)
     async def membership_not_found_handler(
         _: Request, exc: MembershipNotFoundException
+    ) -> JSONResponse:
+        return JSONResponse(status_code=404, content={"detail": exc.message})
+
+    @app.exception_handler(CategoryNotFoundException)
+    async def category_not_found_handler(
+        _: Request, exc: CategoryNotFoundException
+    ) -> JSONResponse:
+        return JSONResponse(status_code=404, content={"detail": exc.message})
+
+    @app.exception_handler(AccountNotFoundException)
+    async def account_not_found_handler(_: Request, exc: AccountNotFoundException) -> JSONResponse:
+        return JSONResponse(status_code=404, content={"detail": exc.message})
+
+    @app.exception_handler(TransactionNotFoundException)
+    async def transaction_not_found_handler(
+        _: Request, exc: TransactionNotFoundException
     ) -> JSONResponse:
         return JSONResponse(status_code=404, content={"detail": exc.message})
 

@@ -136,6 +136,72 @@ curl -X POST http://localhost:8000/workspaces/familia-silva/invites \
   -d '{"invited_email":"membro@example.com","role":"member"}'
 ```
 
+## Core financeiro (Fase 4)
+
+### Convenção de dinheiro (centavos)
+
+- Todos os valores monetários são **inteiros em centavos**.
+- Exemplos: R$ 10,00 → `1000`, R$ 0,99 → `99`.
+
+### Permissões
+
+- `viewer`: somente leitura (GET).
+- `member/admin/owner`: podem criar/editar/deletar (POST/PATCH/DELETE).
+
+### Endpoints
+
+- **Categorias**
+  - `POST /workspaces/{slug}/categories`
+  - `GET /workspaces/{slug}/categories`
+  - `PATCH /workspaces/{slug}/categories/{category_id}`
+  - `DELETE /workspaces/{slug}/categories/{category_id}`
+
+- **Contas**
+  - `POST /workspaces/{slug}/accounts`
+  - `GET /workspaces/{slug}/accounts`
+  - `GET /workspaces/{slug}/accounts/{account_id}`
+  - `PATCH /workspaces/{slug}/accounts/{account_id}`
+  - `DELETE /workspaces/{slug}/accounts/{account_id}`
+
+- **Transações**
+  - `POST /workspaces/{slug}/transactions`
+  - `GET /workspaces/{slug}/transactions` (filtros + paginação + sorting)
+  - `GET /workspaces/{slug}/transactions/{transaction_id}`
+  - `PATCH /workspaces/{slug}/transactions/{transaction_id}`
+  - `DELETE /workspaces/{slug}/transactions/{transaction_id}`
+
+- **Dashboard**
+  - `GET /workspaces/{slug}/dashboard/summary`
+
+### Filtros / paginação / sorting (transactions)
+
+- **Paginação**: `limit` (default 50, max 200), `offset` (default 0)
+- **Sorting**: `newest|oldest|amount_asc|amount_desc`
+- **Filtros**:
+  - `type` (`income|expense`)
+  - `category_id`, `account_id`
+  - `start_date`, `end_date` (ISO datetime)
+  - `amount_min_cents`, `amount_max_cents`
+  - `recurring` (`true|false`)
+  - `search` (busca em `description`/`notes`)
+
+### Exemplo (listar transações)
+
+```bash
+curl "http://localhost:8000/workspaces/familia-silva/transactions?limit=50&offset=0&sort=newest&recurring=true&search=rent" \
+  -H "Authorization: Bearer <access_token>"
+```
+
+### Summary (dashboard)
+
+`GET /workspaces/{slug}/dashboard/summary` retorna:
+
+- `total_balance_cents`: soma dos saldos atuais das contas
+- `total_incomes_cents`: soma de receitas no mês atual
+- `total_expenses_cents`: soma de despesas no mês atual
+- `monthly_balance_cents`: \(incomes - expenses\)
+- `savings_rate`: \(0\) se `incomes=0`, senão \(monthly_balance / incomes\)
+
 ## Variáveis de ambiente
 
 Copie o exemplo:

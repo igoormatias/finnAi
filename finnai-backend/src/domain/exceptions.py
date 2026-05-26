@@ -49,3 +49,15 @@ class DuplicateInviteException(DomainException):
 
 class MembershipNotFoundException(DomainException):
     pass
+
+
+class CategoryNotFoundException(DomainException):
+    pass
+
+
+class AccountNotFoundException(DomainException):
+    pass
+
+
+class TransactionNotFoundException(DomainException):
+    pass

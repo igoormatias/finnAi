@@ -74,7 +74,10 @@ async def db_session(tmp_path) -> AsyncGenerator[AsyncSession, None]:
     async with engine.begin() as connection:
         # Ensure all model modules are imported before create_all()
         from models import (
+            account as _account,  # noqa: F401
             auth_session as _auth_session,  # noqa: F401
+            category as _category,  # noqa: F401
+            transaction as _transaction,  # noqa: F401
             user as _user,  # noqa: F401
             workspace as _workspace,  # noqa: F401
             workspace_invite as _workspace_invite,  # noqa: F401

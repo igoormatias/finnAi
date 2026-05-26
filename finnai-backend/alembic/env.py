@@ -7,7 +7,10 @@ from sqlalchemy import engine_from_config, pool
 
 from core.config import get_settings
 from models.auth_session import AuthSession  # noqa: F401
+from models.account import Account  # noqa: F401
 from models.base import Base
+from models.category import Category  # noqa: F401
+from models.transaction import Transaction  # noqa: F401
 from models.user import User  # noqa: F401
 from models.workspace import Workspace  # noqa: F401
 from models.workspace_invite import WorkspaceInvite  # noqa: F401
