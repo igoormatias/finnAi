@@ -43,6 +43,7 @@ class AIScoreCacheService:
     async def mark_requested(self, score: WorkspaceFinancialScore) -> None:
         score.last_requested_at = datetime.now(timezone.utc)
         score.status = "pending"
+        score.last_error = None
         await self._session.flush()
 
     async def mark_running(self, score: WorkspaceFinancialScore) -> None:

@@ -74,6 +74,7 @@ class Settings(BaseSettings):
     ai_score_debounce_seconds: int = Field(
         default=600, validation_alias="AI_SCORE_DEBOUNCE_SECONDS"
     )
+    ai_score_sync: bool = Field(default=False, validation_alias="AI_SCORE_SYNC")
 
 
 @lru_cache
@@ -82,6 +83,8 @@ def get_settings() -> Settings:
     if settings.app_env == AppEnvironment.production:
         settings.debug = False
         settings.auth_cookie_secure = True
+    elif settings.app_env == AppEnvironment.development:
+        settings.ai_score_debounce_seconds = min(settings.ai_score_debounce_seconds, 60)
     return settings
 
 

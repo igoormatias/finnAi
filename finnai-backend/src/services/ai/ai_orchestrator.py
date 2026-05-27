@@ -29,12 +29,36 @@ class AIOrchestrator:
         await self._cache.mark_running(score_row)
         await self._session.commit()
 
+        completion = None
         try:
             snapshot = await self._build_snapshot(workspace)
             prompt = build_financial_score_prompt(input_payload=snapshot)
+
             completion = await self._provider.complete_json(prompt=prompt.prompt)
             payload = parse_score_json(completion.raw_text)
-        except (AIProviderException, AIParseException):
+
+            if _looks_english(payload):
+                # Retry once with a stronger instruction (no loops).
+                reinforced_prompt = (
+                    prompt.prompt
+                    + "\nATENÇÃO: A saída DEVE estar 100% em português (pt-BR). "
+                    "Se algum texto estiver em inglês, reescreva tudo em pt-BR.\n"
+                )
+                completion = await self._provider.complete_json(prompt=reinforced_prompt)
+                payload = parse_score_json(completion.raw_text)
+                if _looks_english(payload):
+                    raise AIParseException("AI response not in pt-BR")
+        except AIParseException as exc:
+            if completion is not None:
+                preview = completion.raw_text.strip()[:500]
+                score_row.raw_response = {
+                    **(completion.raw_json if isinstance(completion.raw_json, dict) else {}),
+                    "parse_preview": preview,
+                }
+                await self._session.flush()
+                raise AIParseException(f"{exc.message} | preview: {preview}") from exc
+            raise
+        except AIProviderException:
             raise
         except Exception as exc:  # noqa: BLE001
             raise AIProviderException("AI orchestration failed") from exc
@@ -94,3 +118,38 @@ class AIOrchestrator:
                 {"name": name, "total_cents": int(total)} for _, name, total in cats_expense[:5]
             ],
         }
+
+
+_ENGLISH_MARKERS = {
+    "the",
+    "and",
+    "with",
+    "you",
+    "your",
+    "health",
+    "exceptional",
+    "financial",
+    "savings",
+    "income",
+    "expenses",
+    "balance",
+    "strong",
+    "weakness",
+    "tips",
+}
+
+
+def _looks_english(payload) -> bool:
+    text = " ".join(
+        [
+            str(getattr(payload, "label", "")),
+            str(getattr(payload, "summary", "")),
+            " ".join(getattr(payload, "strengths", []) or []),
+            " ".join(getattr(payload, "weaknesses", []) or []),
+            " ".join(getattr(payload, "tips", []) or []),
+            " ".join(getattr(payload, "badges", []) or []),
+        ]
+    ).lower()
+    # Simple marker-based heuristic: if multiple common English tokens appear, treat as English.
+    hits = sum(1 for w in _ENGLISH_MARKERS if f" {w} " in f" {text} ")
+    return hits >= 2

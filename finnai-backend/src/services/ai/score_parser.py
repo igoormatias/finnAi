@@ -1,45 +1,47 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from domain.ai.schemas import FinnAIScorePayload
 from domain.exceptions import AIParseException
 
+_FENCE_PATTERN = re.compile(r"```(?:json)?\s*([\s\S]*?)```", re.IGNORECASE)
+
 
 def parse_score_json(raw_text: str) -> FinnAIScorePayload:
-    extracted = _extract_json_object(raw_text)
+    json_text = _extract_json_text(raw_text)
     try:
-        payload = FinnAIScorePayload.model_validate(extracted)
+        parsed = json.loads(json_text)
+    except json.JSONDecodeError as exc:
+        raise AIParseException("Failed to parse JSON object from AI response") from exc
+
+    if not isinstance(parsed, dict):
+        raise AIParseException("AI response JSON must be an object")
+
+    try:
+        return FinnAIScorePayload.model_validate(parsed)
     except Exception as exc:  # noqa: BLE001
         raise AIParseException("Invalid AI score JSON") from exc
-    return payload
 
 
-def _extract_json_object(text: str) -> dict[str, Any]:
-    text = text.strip()
-    if text.startswith("{") and text.endswith("}"):
-        try:
-            return json.loads(text)
-        except Exception:  # noqa: BLE001
-            pass
+def _extract_json_text(raw: str) -> str:
+    """Extract a JSON object string from Gemini output (aligned with escalaAi parser)."""
+    trimmed = raw.strip()
+    if not trimmed:
+        raise AIParseException("AI response is empty")
 
-    start = text.find("{")
-    if start == -1:
-        raise AIParseException("AI response does not contain JSON object")
+    if trimmed.startswith("{"):
+        return trimmed
 
-    depth = 0
-    for i in range(start, len(text)):
-        ch = text[i]
-        if ch == "{":
-            depth += 1
-        elif ch == "}":
-            depth -= 1
-            if depth == 0:
-                candidate = text[start : i + 1]
-                try:
-                    return json.loads(candidate)
-                except Exception as exc:  # noqa: BLE001
-                    raise AIParseException("Failed to parse JSON object from AI response") from exc
+    fence_match = _FENCE_PATTERN.search(trimmed)
+    if fence_match:
+        return fence_match.group(1).strip()
 
-    raise AIParseException("Unbalanced JSON braces in AI response")
+    start = trimmed.find("{")
+    end = trimmed.rfind("}")
+    if start >= 0 and end > start:
+        return trimmed[start : end + 1]
+
+    raise AIParseException("AI response does not contain JSON object")

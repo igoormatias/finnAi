@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { regenerateScore } from "../../services/ai-score-service";
 import type { FinnAIScore } from "../../types";
+import { applyPendingScoreOptimistic, isScorePopulated } from "../../utils/optimistic-score";
 import { useAIScoreUiStore } from "../../store/ai-score-ui-store";
 import { useWorkspaceSlug } from "@/features/workspaces";
 import { queryKeys } from "@/shared/api/query-keys";
@@ -14,6 +15,7 @@ export function useRegenerateScore() {
   const slug = useWorkspaceSlug();
   const queryClient = useQueryClient();
   const startGenerating = useAIScoreUiStore((s) => s.startGenerating);
+  const scoreKey = queryKeys.aiScore.detail(slug);
 
   return useMutation({
     mutationFn: () => regenerateScore(slug),
@@ -23,10 +25,9 @@ export function useRegenerateScore() {
         return;
       }
 
-      const current = queryClient.getQueryData<FinnAIScore | null>(
-        queryKeys.aiScore.detail(slug)
-      );
-      startGenerating(current?.generated_at ?? null);
+      const current = queryClient.getQueryData<FinnAIScore | null>(scoreKey);
+      queryClient.setQueryData<FinnAIScore | null>(scoreKey, applyPendingScoreOptimistic(current));
+      startGenerating(isScorePopulated(current) ? current!.generated_at : null);
       toast.message("IA analisando suas finanças…");
     },
     onError: (err) => {
@@ -36,8 +37,9 @@ export function useRegenerateScore() {
       }
       toast.error("Não foi possível iniciar a regeneração.");
     },
-    onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.aiScore.detail(slug) });
+    onSettled: (data) => {
+      if (data?.debounced) return;
+      void queryClient.invalidateQueries({ queryKey: scoreKey });
     },
   });
 }

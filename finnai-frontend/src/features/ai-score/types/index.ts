@@ -8,6 +8,9 @@ export type FinnAIScore = {
   tips: string[];
   badges: string[];
   generated_at: string;
+  status: "idle" | "pending" | "running" | "failed";
+  last_error?: string | null;
+  is_stale: boolean;
 };
 
 export type RegenerateScoreResponse = {

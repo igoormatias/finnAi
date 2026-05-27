@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 import { useFinnAIScore } from "../use-finnai-score";
+import { isScorePopulated } from "../../utils/optimistic-score";
 import {
   MAX_POLL_ATTEMPTS,
   POLL_INTERVAL_MS,
@@ -34,7 +36,19 @@ export function useAIScorePolling() {
     if (!isGenerating) return;
 
     const score = query.data;
-    if (score?.generated_at && score.generated_at !== baselineGeneratedAt) {
+
+    if (score?.status === "failed") {
+      stopGenerating();
+      if (score.last_error?.trim()) {
+        toast.error(score.last_error.trim());
+      }
+      return;
+    }
+
+    if (
+      isScorePopulated(score) &&
+      (baselineGeneratedAt === null || score.generated_at !== baselineGeneratedAt)
+    ) {
       stopGenerating();
       return;
     }

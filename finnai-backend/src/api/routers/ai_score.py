@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import asyncio
-
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks
 
 from api.deps import SettingsDep
 from api.deps_ai import FinancialScoreServiceDep
@@ -28,6 +26,9 @@ async def get_score(
         tips=list(score.tips),
         badges=list(score.badges),
         generated_at=score.generated_at,
+        status=score.status,
+        last_error=score.last_error,
+        is_stale=bool(score.is_stale),
     )
 
 
@@ -36,11 +37,14 @@ async def regenerate(
     context: FinanceWriteDep,
     service: FinancialScoreServiceDep,
     settings: SettingsDep,
+    background_tasks: BackgroundTasks,
 ) -> RegenerateResponse:
     result = await service.request_regenerate(workspace=context.workspace)
     if not result.debounced:
-        if settings.app_env.value == "test":
+        if settings.app_env.value == "test" or settings.ai_score_sync:
             await service.run_regeneration_in_session(workspace=context.workspace)
         else:
-            asyncio.create_task(service.run_regeneration(workspace_id=context.workspace.id))
+            background_tasks.add_task(
+                service.run_regeneration, workspace_id=context.workspace.id
+            )
     return RegenerateResponse(status=result.status, debounced=result.debounced)

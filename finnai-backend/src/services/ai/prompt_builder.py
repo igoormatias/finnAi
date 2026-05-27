@@ -11,7 +11,7 @@ class PromptBuildResult:
 
 
 def build_financial_score_prompt(*, input_payload: dict) -> PromptBuildResult:
-    prompt_version = "v1"
+    prompt_version = "v2_ptbr"
     schema = {
         "score": 0,
         "label": "string",
@@ -21,15 +21,29 @@ def build_financial_score_prompt(*, input_payload: dict) -> PromptBuildResult:
         "tips": ["string"],
         "badges": ["string"],
     }
+    example = {
+        "score": 85,
+        "label": "Bom controle financeiro",
+        "summary": "Você mantém um bom equilíbrio entre entradas e saídas, com oportunidades de melhorar a previsibilidade dos gastos.",
+        "strengths": ["Boa taxa de poupança", "Controle de despesas fixas"],
+        "weaknesses": ["Gastos variáveis acima do ideal"],
+        "tips": ["Defina um teto mensal para lazer e alimentação fora"],
+        "badges": ["Disciplina Financeira"],
+    }
     instructions = (
-        "You are FinnAI Score, a financial analyst.\n"
-        "Return ONLY valid JSON (no markdown, no extra text).\n"
-        "Follow EXACTLY this JSON schema (keys and types):\n"
+        "Você é o FinnAI Score, um analista financeiro.\n"
+        "Responda APENAS com JSON válido (sem markdown, sem texto extra).\n"
+        "Siga EXATAMENTE este schema (chaves e tipos):\n"
         f"{json.dumps(schema, ensure_ascii=False)}\n"
-        "Constraints:\n"
-        "- score must be an integer 0..100\n"
-        "- keep lists <= 10 items\n"
-        "- be concise and actionable\n"
+        "Idioma obrigatório:\n"
+        "- Escreva label, summary e TODOS os itens das listas em português (pt-BR).\n"
+        "- Não use inglês.\n"
+        "Restrições:\n"
+        "- score deve ser um inteiro de 0 a 100\n"
+        "- listas com no máximo 10 itens\n"
+        "- seja conciso e acionável\n"
+        "Exemplo de resposta (apenas para referência de idioma e formato):\n"
+        f"{json.dumps(example, ensure_ascii=False)}\n"
     )
     payload = json.dumps(input_payload, ensure_ascii=False, separators=(",", ":"))
     prompt = f"{instructions}\nINPUT:\n{payload}\n"

@@ -8,6 +8,7 @@ import { useAIScorePolling } from "../use-ai-score-polling";
 import { useAIScoreHistoryStore } from "../../store/ai-score-history-store";
 import { useAIScoreUiStore } from "../../store/ai-score-ui-store";
 import type { AIScoreUiStatus } from "../../types";
+import { isScorePopulated } from "../../utils/optimistic-score";
 import { isScoreStale } from "../../utils/score-theme";
 import { useWorkspacePermissions } from "@/features/workspaces";
 
@@ -23,14 +24,15 @@ export function useAIScoreState() {
   useAIScorePolling();
 
   const score = query.data ?? null;
+  const isPopulated = isScorePopulated(score);
 
   useEffect(() => {
-    if (!score) return;
+    if (!score || !isPopulated) return;
     appendPoint(score.workspace_id, {
       score: score.score,
       generated_at: score.generated_at,
     });
-  }, [score, appendPoint]);
+  }, [score, isPopulated, appendPoint]);
 
   const canRegenerate = useMemo(() => {
     const role = permissions.currentRole;
@@ -40,13 +42,23 @@ export function useAIScoreState() {
   const status: AIScoreUiStatus = useMemo(() => {
     if (query.isLoading && !score) return "loading";
     if (query.isError && !score) return "error";
-    if (isGenerating) return "generating";
+    if (isGenerating || regenerate.isPending) return "generating";
+    if (score?.status === "pending" || score?.status === "running") return "generating";
+    if (score?.status === "failed") return "error";
     if (!score && !query.isLoading) return "empty";
+    if (score && !isPopulated) return "generating";
     return "ready";
-  }, [query.isLoading, query.isError, score, isGenerating]);
+  }, [
+    query.isLoading,
+    query.isError,
+    score,
+    isGenerating,
+    regenerate.isPending,
+    isPopulated,
+  ]);
 
-  const isStale = score ? isScoreStale(score.generated_at) : false;
-  const history = score ? getHistory(score.workspace_id) : [];
+  const isStale = score ? (score.is_stale ?? isScoreStale(score.generated_at)) : false;
+  const history = score && isPopulated ? getHistory(score.workspace_id) : [];
 
   const requestRegenerate = () => {
     useAIScoreUiStore.getState().resetPoll();

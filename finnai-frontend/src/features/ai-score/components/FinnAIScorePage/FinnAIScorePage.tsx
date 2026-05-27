@@ -36,14 +36,81 @@ export const FinnAIScorePage = () => {
     return <AIScoreSkeleton />;
   }
 
-  if (status === "error" && !score) {
+  if (status === "generating") {
+    return (
+      <section className="grid gap-6 p-4 md:p-6">
+        <header>
+          <p className="text-xs font-medium uppercase tracking-wider text-primary">
+            Inteligência artificial
+          </p>
+          <h1 className="text-2xl font-semibold tracking-tight">FinnAI Score</h1>
+          <p className="text-sm text-muted">A IA está analisando suas finanças…</p>
+        </header>
+        <AIScoreThinking />
+        {generationTimedOut && (
+          <div
+            className="flex items-start gap-3 rounded-xl border border-border bg-elevated/40 p-4 text-sm"
+            role="alert"
+          >
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted" aria-hidden />
+            <div>
+              <p className="font-medium text-foreground">A análise está demorando</p>
+              <p className="text-muted">
+                Tente atualizar ou iniciar uma nova regeneração.
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => void refetch()}
+                  className="cursor-pointer"
+                >
+                  Atualizar
+                </Button>
+                <Button
+                  type="button"
+                  onClick={requestRegenerate}
+                  disabled={!canRegenerate}
+                  className="cursor-pointer"
+                >
+                  Regenerar novamente
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+    );
+  }
+
+  if (status === "error") {
+    const message =
+      score?.last_error && score.last_error.trim().length > 0
+        ? `Detalhes: ${score.last_error}`
+        : undefined;
     return (
       <ErrorState
-        title="Não foi possível carregar o FinnAI Score."
+        title="Não foi possível gerar o FinnAI Score."
+        description={message}
         action={
-          <Button type="button" variant="outline" onClick={() => void refetch()} className="cursor-pointer">
-            Tentar novamente
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void refetch()}
+              className="cursor-pointer"
+            >
+              Atualizar
+            </Button>
+            <Button
+              type="button"
+              onClick={requestRegenerate}
+              disabled={!canRegenerate}
+              className="cursor-pointer"
+            >
+              Regenerar score
+            </Button>
+          </div>
         }
       />
     );

@@ -16,6 +16,9 @@ class FinnAIScoreResponse(BaseModel):
     tips: list[str]
     badges: list[str]
     generated_at: datetime
+    status: str
+    last_error: str | None = None
+    is_stale: bool
 
 
 class RegenerateResponse(BaseModel):
