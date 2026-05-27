@@ -4,7 +4,10 @@ import uuid
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfoNotFoundError
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 WorkspaceRoleLiteral = Literal["owner", "admin", "member", "viewer"]
 
@@ -15,6 +18,18 @@ class WorkspaceCreate(BaseModel):
 
 class WorkspaceUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=255)
+    timezone: str | None = Field(default=None, min_length=1, max_length=64)
+
+    @field_validator("timezone")
+    @classmethod
+    def validate_timezone(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        try:
+            ZoneInfo(value)
+        except ZoneInfoNotFoundError as exc:
+            raise ValueError("Invalid timezone") from exc
+        return value
 
 
 class WorkspaceResponse(BaseModel):
@@ -23,6 +38,7 @@ class WorkspaceResponse(BaseModel):
     id: uuid.UUID
     name: str
     slug: str
+    timezone: str
     owner_id: uuid.UUID
     created_at: datetime
     updated_at: datetime

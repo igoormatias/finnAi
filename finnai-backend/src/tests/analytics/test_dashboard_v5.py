@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from fastapi.testclient import TestClient
 
@@ -68,7 +68,7 @@ def test_dashboard_overview_cashflow_categories_trends_accounts(client: TestClie
     cat_expense = _create_category(client, token, slug, "expense")
     account_id = _create_account(client, token, slug, initial=1000)
 
-    now = datetime.now(UTC)
+    now = datetime.now(timezone.utc)
     earlier = now - timedelta(days=2)
     _create_tx(client, token, slug, account_id, cat_income, "income", 500, earlier, "salary")
     _create_tx(client, token, slug, account_id, cat_expense, "expense", 200, now, "rent")
@@ -93,7 +93,10 @@ def test_dashboard_overview_cashflow_categories_trends_accounts(client: TestClie
         headers=auth_headers(token),
     )
     assert cashflow.status_code == 200
-    assert cashflow.json()["granularity"] == "daily"
+    cashflow_body = cashflow.json()
+    assert cashflow_body["granularity"] == "daily"
+    assert cashflow_body["points"]
+    assert cashflow_body["points"][-1]["expense_cents"] == 200
 
     categories = client.get(
         f"/workspaces/{slug}/dashboard/categories",
@@ -125,7 +128,7 @@ def test_reports_export_csv_and_xlsx(client: TestClient) -> None:
     cat_income = _create_category(client, token, slug, "income")
     account_id = _create_account(client, token, slug, initial=0)
 
-    now = datetime.now(UTC)
+    now = datetime.now(timezone.utc)
     _create_tx(client, token, slug, account_id, cat_income, "income", 123, now, "test")
 
     csv_res = client.get(

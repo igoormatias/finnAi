@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -60,6 +60,6 @@ class FinancialSummaryService:
 
     @staticmethod
     def _current_month_range() -> tuple[datetime, datetime]:
-        now = datetime.now(UTC)
-        start = datetime(year=now.year, month=now.month, day=1, tzinfo=UTC)
+        now = datetime.now(timezone.utc)
+        start = datetime(year=now.year, month=now.month, day=1, tzinfo=timezone.utc)
         return start, now

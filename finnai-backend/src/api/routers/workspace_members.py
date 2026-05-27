@@ -60,3 +60,11 @@ async def remove_member(
         context.membership,
         member_id,
     )
+
+
+@router.post("/leave", status_code=204)
+async def leave_workspace(
+    context: WorkspaceMemberDep,
+    membership_service: MembershipServiceDep,
+) -> None:
+    await membership_service.leave_workspace(context.workspace, context.user, context.membership)

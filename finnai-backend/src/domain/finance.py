@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from enum import StrEnum
+from enum import Enum
 
 
-class CategoryType(StrEnum):
+class CategoryType(str, Enum):
     income = "income"
     expense = "expense"
 
 
-class AccountType(StrEnum):
+class AccountType(str, Enum):
     checking = "checking"
     savings = "savings"
     wallet = "wallet"
@@ -16,12 +16,12 @@ class AccountType(StrEnum):
     investment = "investment"
 
 
-class TransactionType(StrEnum):
+class TransactionType(str, Enum):
     income = "income"
     expense = "expense"
 
 
-class RecurrenceRule(StrEnum):
+class RecurrenceRule(str, Enum):
     weekly = "weekly"
     monthly = "monthly"
     yearly = "yearly"

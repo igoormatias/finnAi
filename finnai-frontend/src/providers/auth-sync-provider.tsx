@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { useAuth } from "@/features/auth/hooks/use-auth";
+import { useAuth } from "@/features/auth";
 
 export function AuthSyncProvider({ children }: { children: React.ReactNode }) {
   const { syncFromSession, isLoading } = useAuth();

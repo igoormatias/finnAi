@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from enum import StrEnum
+from enum import Enum
 
 
-class WorkspaceRole(StrEnum):
+class WorkspaceRole(str, Enum):
     owner = "owner"
     admin = "admin"
     member = "member"

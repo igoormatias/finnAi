@@ -51,6 +51,7 @@ async def update_workspace(
     workspace = await workspace_service.update_workspace(
         context.workspace,
         name=body.name,
+        timezone=body.timezone,
     )
     return WorkspaceResponse.model_validate(workspace)
 

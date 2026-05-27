@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import uuid
-from datetime import UTC, datetime, timedelta
-from enum import StrEnum
+from datetime import datetime, timedelta, timezone
+from enum import Enum
 from typing import Any
 
 from jose import JWTError, jwt
@@ -10,7 +10,7 @@ from jose import JWTError, jwt
 from domain.exceptions import InvalidTokenException
 
 
-class TokenType(StrEnum):
+class TokenType(str, Enum):
     access = "access"
     refresh = "refresh"
 
@@ -21,7 +21,7 @@ def create_access_token(
     secret: str,
     expires_minutes: int,
 ) -> str:
-    now = datetime.now(UTC)
+    now = datetime.now(timezone.utc)
     payload = {
         "sub": str(user_id),
         "type": TokenType.access.value,
@@ -39,7 +39,7 @@ def create_refresh_token(
     secret: str,
     expires_days: int,
 ) -> str:
-    now = datetime.now(UTC)
+    now = datetime.now(timezone.utc)
     payload = {
         "sub": str(user_id),
         "sid": str(session_id),

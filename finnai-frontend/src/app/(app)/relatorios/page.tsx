@@ -1,4 +1,4 @@
-import { WorkspaceRedirect } from "@/features/workspaces/components/workspace-redirect";
+import { WorkspaceRedirect } from "@/features/workspaces";
 
 export default function LegacyRelatoriosRedirectPage() {
   return <WorkspaceRedirect section="dashboard" />;

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from fastapi.testclient import TestClient
 
@@ -19,6 +19,16 @@ def test_create_workspace(client: TestClient) -> None:
     body = response.json()
     assert body["name"] == "Familia Silva"
     assert body["slug"] == "familia-silva"
+    assert body["timezone"] == "UTC"
+
+    categories = client.get(
+        f"/workspaces/{body['slug']}/categories",
+        headers=auth_headers(token),
+    )
+    assert categories.status_code == 200
+    names = {c["name"] for c in categories.json()}
+    assert "Salário" in names
+    assert "Alimentação" in names
 
 
 def test_list_workspaces_only_for_member(client: TestClient) -> None:
@@ -169,6 +179,67 @@ def test_owner_can_delete_workspace(client: TestClient) -> None:
     assert get_after.status_code == 404
 
 
+def test_admin_can_update_timezone(client: TestClient) -> None:
+    owner_token = login(client, "owner@example.com")
+
+    created = client.post(
+        "/workspaces",
+        json={"name": "Workspace TZ"},
+        headers=auth_headers(owner_token),
+    )
+    slug = created.json()["slug"]
+
+    updated = client.patch(
+        f"/workspaces/{slug}",
+        json={"timezone": "America/Sao_Paulo"},
+        headers=auth_headers(owner_token),
+    )
+    assert updated.status_code == 200
+    assert updated.json()["timezone"] == "America/Sao_Paulo"
+
+    invalid = client.patch(
+        f"/workspaces/{slug}",
+        json={"timezone": "Invalid/Timezone"},
+        headers=auth_headers(owner_token),
+    )
+    assert invalid.status_code == 422
+
+
+def test_member_can_leave_workspace_and_owner_cannot(client: TestClient) -> None:
+    owner_token = login(client, "owner@example.com")
+    member_token = login(client, "member-leave@example.com")
+
+    created = client.post(
+        "/workspaces",
+        json={"name": "Workspace Leave"},
+        headers=auth_headers(owner_token),
+    )
+    slug = created.json()["slug"]
+
+    invite = client.post(
+        f"/workspaces/{slug}/invites",
+        json={"invited_email": "member-leave@example.com", "role": "member"},
+        headers=auth_headers(owner_token),
+    )
+    assert invite.status_code == 201
+    token = invite.json()["token"]
+
+    accepted = client.post(
+        f"/invites/{token}/accept",
+        headers=auth_headers(member_token),
+    )
+    assert accepted.status_code == 200
+
+    left = client.post(f"/workspaces/{slug}/members/leave", headers=auth_headers(member_token))
+    assert left.status_code == 204
+
+    after_leave = client.get(f"/workspaces/{slug}", headers=auth_headers(member_token))
+    assert after_leave.status_code == 403
+
+    owner_leave = client.post(f"/workspaces/{slug}/members/leave", headers=auth_headers(owner_token))
+    assert owner_leave.status_code == 403
+
+
 def test_expired_invite_cannot_be_accepted(client: TestClient, db_session) -> None:
     import asyncio
 
@@ -195,7 +266,7 @@ def test_expired_invite_cannot_be_accepted(client: TestClient, db_session) -> No
         repo = InviteRepository(db_session)
         record = await repo.get_by_token(token)
         assert record is not None
-        record.expires_at = datetime.now(UTC) - timedelta(days=1)
+        record.expires_at = datetime.now(timezone.utc) - timedelta(days=1)
         await db_session.commit()
 
     asyncio.get_event_loop().run_until_complete(expire_invite())

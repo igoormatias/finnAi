@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import secrets
 import uuid
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -43,7 +43,7 @@ class InviteService:
         if role == WorkspaceRole.owner:
             raise ForbiddenException("Cannot invite with owner role")
 
-        now = datetime.now(UTC)
+        now = datetime.now(timezone.utc)
         normalized_email = invited_email.lower().strip()
 
         duplicate = await self._invites.find_active_duplicate(workspace.id, normalized_email, now)
@@ -94,10 +94,10 @@ class InviteService:
         if invite.accepted_at is not None:
             raise InviteAlreadyAcceptedException("Invite already accepted")
 
-        now = datetime.now(UTC)
+        now = datetime.now(timezone.utc)
         expires_at = invite.expires_at
         if expires_at.tzinfo is None:
-            expires_at = expires_at.replace(tzinfo=UTC)
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
         if expires_at <= now:
             raise InviteExpiredException("Invite has expired")
 

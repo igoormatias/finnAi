@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from fastapi.testclient import TestClient
 from jose import jwt
@@ -9,7 +9,7 @@ TEST_ACCESS_SECRET = "test-access-secret-key"
 
 
 def create_expired_access_token(user_id: str) -> str:
-    now = datetime.now(UTC)
+    now = datetime.now(timezone.utc)
     payload = {
         "sub": user_id,
         "type": "access",

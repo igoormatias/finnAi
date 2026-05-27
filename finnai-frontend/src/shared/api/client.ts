@@ -1,6 +1,6 @@
 "use client";
 
-import { refreshAccessToken } from "@/features/auth/services/token-refresh-service";
+import { refreshAccessToken } from "@/features/auth";
 import { useAuthStore } from "@/features/auth/store/auth-store";
 
 export class ApiError extends Error {

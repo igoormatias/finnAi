@@ -48,7 +48,7 @@ export function buildNavItems(slug: string): AppNavItem[] {
     {
       section: "score",
       href: workspacePath(slug, "score"),
-      label: "Score",
+      label: "FinnAI Score",
       icon: Gauge,
     },
     {
@@ -58,8 +58,8 @@ export function buildNavItems(slug: string): AppNavItem[] {
       icon: Target,
     },
     {
-      section: "relatorios",
-      href: workspacePath(slug, "relatorios"),
+      section: "reports",
+      href: workspacePath(slug, "reports"),
       label: "Relatórios",
       icon: BarChart3,
     },

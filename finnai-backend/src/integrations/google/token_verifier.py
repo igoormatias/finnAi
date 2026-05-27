@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from integrations.google.client import GoogleOAuthClient
 from integrations.google.exceptions import GoogleTokenValidationError
@@ -31,8 +31,8 @@ class GoogleTokenVerifier:
         if not _is_email_verified(token_info.email_verified):
             raise GoogleTokenValidationError("Google email is not verified")
 
-        expires_at = datetime.fromtimestamp(token_info.exp, tz=UTC)
-        if expires_at <= datetime.now(UTC):
+        expires_at = datetime.fromtimestamp(token_info.exp, tz=timezone.utc)
+        if expires_at <= datetime.now(timezone.utc):
             raise GoogleTokenValidationError("Google token has expired")
 
         return token_info

@@ -1,39 +1,30 @@
 # Core Frontend Rules
 
+> Detalhes completos: [rules.md](./rules.md) · Qualidade: [quality.md](./quality.md) · Agents: [../AGENTS.md](../AGENTS.md)
+
 ## Estrutura
 
-* Usar feature-based (`src/features/<feature>`)
-* Separar responsabilidades: components / hooks / utils / context
-* Não misturar responsabilidades na mesma pasta
+* Feature-based (`src/features/<feature>`)
+* Separar: `components/` · `hooks/` · `services/` · `utils/` · `types/`
+* `src/components/` — UI compartilhada (layout, states, ui)
 
 ## Naming
 
-* Componentes: PascalCase
-* Arquivos: kebab-case
-* Hooks: useSomething.ts
+* **Componentes:** `ComponentName/ComponentName.tsx` (PascalCase), arrow functions
+* **Hooks / services / utils:** pasta e arquivo kebab-case (`use-auth/use-auth.ts`)
 
 ## Organização
 
-* Cada módulo deve ter pasta própria
-* Todo módulo deve ter `index.ts` (barrel)
-* Nunca importar arquivos internos diretamente
-
-## Hooks
-
-* Criar hook quando houver lógica/estado
-* Hooks com lógica devem ter testes
+* Cada módulo: pasta própria + `index.ts` (barrel)
+* Importar via barrel (`@/features/workspaces`, `@/components/ui`)
+* Nunca deep import de arquivos internos
 
 ## Testes
 
-* Obrigatório para:
+* Colocalizados com o módulo; sem `__tests__/` em features
+* Obrigatório para hooks com lógica, utils, services
 
-  * hooks com lógica
-  * utils
-* Não testar UI simples
-
-## Regras gerais
+## Geral
 
 * Evitar arquivos genéricos (`utils.ts`, `helpers.ts`)
-* Evitar nomes genéricos (`data`, `res`, `item`)
-* Se não sabe onde colocar o arquivo → estrutura está errada
-* **Tailwind v4:** preferir classes canônicas (`bg-white/2`, `border-white/10`) em vez de opacidade arbitrária (`bg-white/[0.02]`) — ver `rules.md` § Tailwind
+* Tailwind v4: classes canônicas — ver `rules.md`

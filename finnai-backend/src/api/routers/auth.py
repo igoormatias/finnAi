@@ -10,6 +10,27 @@ from schemas.user import UserResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+def _get_cookie_value(request: Request, key: str) -> str | None:
+    """
+    Extract a cookie value from the raw `Cookie` header.
+
+    If the request contains multiple cookies with the same name, returns None to
+    avoid ambiguous refresh behavior.
+    """
+    raw = request.headers.get("cookie")
+    if not raw:
+        return request.cookies.get(key)
+    value: str | None = None
+    matches = 0
+    for part in raw.split(";"):
+        name, sep, v = part.strip().partition("=")
+        if sep and name == key:
+            value = v
+            matches += 1
+    if matches > 1:
+        return None
+    return value or request.cookies.get(key)
+
 
 def _set_refresh_cookie(response: Response, refresh_token: str) -> None:
     settings = get_settings()
@@ -46,7 +67,7 @@ async def refresh_tokens(
     auth_service: AuthServiceDep,
 ) -> AuthResponse:
     settings = get_settings()
-    refresh_token = request.cookies.get(settings.auth_cookie_name)
+    refresh_token = _get_cookie_value(request, settings.auth_cookie_name)
     if not refresh_token:
         raise UnauthorizedException("Refresh token missing")
 

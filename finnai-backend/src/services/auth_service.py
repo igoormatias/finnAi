@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -88,12 +88,12 @@ class AuthService:
         if auth_session is None:
             raise UnauthorizedException("Invalid refresh token")
 
-        now = datetime.now(UTC)
+        now = datetime.now(timezone.utc)
         if auth_session.revoked_at is not None:
             raise UnauthorizedException("Refresh token has been revoked")
         expires_at = auth_session.expires_at
         if expires_at.tzinfo is None:
-            expires_at = expires_at.replace(tzinfo=UTC)
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
         if expires_at <= now:
             raise UnauthorizedException("Refresh token has expired")
         if auth_session.user_id != payload.sub:
@@ -126,7 +126,9 @@ class AuthService:
 
     async def _issue_tokens(self, user: User) -> AuthTokens:
         session_id = uuid.uuid4()
-        expires_at = datetime.now(UTC) + timedelta(days=self._settings.refresh_token_expire_days)
+        expires_at = datetime.now(timezone.utc) + timedelta(
+            days=self._settings.refresh_token_expire_days
+        )
         refresh_jwt = self._token_service.create_refresh_token(user.id, session_id)
         token_hash = hash_refresh_token(refresh_jwt, self._settings.jwt_refresh_secret_key)
 

@@ -1,4 +1,4 @@
-import { FinanceTransactionsSkeleton } from "@/features/finance/components/transactions/finance-transactions-skeleton";
+import { FinanceTransactionsSkeleton } from "@/features/finance";
 
 export default function TransactionsLoadingPage() {
   return <FinanceTransactionsSkeleton />;

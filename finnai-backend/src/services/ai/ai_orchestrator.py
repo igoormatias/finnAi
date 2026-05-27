@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -46,7 +46,7 @@ class AIOrchestrator:
         score_row.weaknesses = payload.weaknesses
         score_row.tips = payload.tips
         score_row.badges = payload.badges
-        score_row.generated_at = datetime.now(UTC)
+        score_row.generated_at = datetime.now(timezone.utc)
         score_row.raw_response = completion.raw_json
         score_row.provider = self._settings.ai_provider
         score_row.model = completion.model
@@ -59,8 +59,8 @@ class AIOrchestrator:
     async def _build_snapshot(self, workspace: Workspace) -> dict:
         tz = workspace.timezone or "UTC"
         # Current month aggregates in UTC range (service-level uses tz; keep minimal here)
-        now = datetime.now(UTC)
-        start = datetime(year=now.year, month=now.month, day=1, tzinfo=UTC)
+        now = datetime.now(timezone.utc)
+        start = datetime(year=now.year, month=now.month, day=1, tzinfo=timezone.utc)
         income, expense, tx_count = await self._analytics.monthly_income_expense_and_count(
             workspace_id=workspace.id, start_date=start, end_date=now
         )

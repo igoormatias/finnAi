@@ -77,6 +77,11 @@ Adicione em **Authorized redirect URIs**:
 | `/login` | Login Google (guest) |
 | `/workspaces/[slug]/dashboard` | Dashboard financeiro (protegida) |
 | `/workspaces/[slug]/gastos`, `/score`, … | Seções do workspace |
+| `/workspaces/[slug]/workspaces` | Hub workspace familiar (Fase 5) |
+| `/workspaces/[slug]/members` | Membros e papéis |
+| `/workspaces/[slug]/invites` | Convites (admin) |
+| `/workspaces/[slug]/settings` | Nome, timezone, danger zone |
+| `/invites/[token]` | Aceitar convite (login → redirect) |
 | `/dashboard`, `/gastos`, … | Redirect → primeiro workspace |
 | `/onboarding` | Autenticado sem workspace |
 
@@ -107,23 +112,26 @@ Valores monetários vêm em **centavos** (`*_cents`). Filtros de período: **7D 
 
 ## Arquitetura (feature-based)
 
+Leia **[AGENTS.md](AGENTS.md)** e [`.cursor/rules.md`](.cursor/rules.md) antes de contribuir.
+
 ```
 src/
-  features/
-    auth/          # login, hooks, store, services
-    landing/       # landing page sections
-    onboarding/    # primeiro workspace
-    workspaces/    # API workspaces, switcher, slug hooks
-    dashboard/     # analytics, charts (Recharts), hooks
+  features/<feature>/
+    components/WorkspaceHubPage/WorkspaceHubPage.tsx
+    hooks/use-workspace-members/use-workspace-members.ts
+    services/workspace-service/workspace-service.ts
+    index.ts                    # barrel público
+  components/
+    ui/Button/Button.tsx        # import: @/components/ui
+    layout/AppShell/AppShell.tsx
+    states/ErrorState/ErrorState.tsx
   shared/
-    api/           # client, query keys
-    config/        # env, routes, middleware utils
   app/
-    (marketing)/   # landing
-    (auth)/        # login
-    (app)/         # app protegido
-    api/           # BFF
 ```
+
+- Componentes: **PascalCase** em pasta própria, `export const` (arrow)
+- Hooks/services/utils: **kebab-case** + `index.ts`
+- Testes **colocalizados** (sem `__tests__/` em features)
 
 ## Design system
 
@@ -141,4 +149,46 @@ Os prints em `assets/` são majoritariamente **desktop**; implementação **mobi
 pnpm test
 ```
 
-Cobertura: auth, middleware (incl. `/workspaces/*`), dashboard formatters/service/components, sidebar por slug.
+Cobertura: auth, middleware (incl. `/workspaces/*`), dashboard formatters/service/components, finance, workspaces (permissões, convites, settings).
+
+## Workspaces familiares (Fase 5)
+
+Referência visual: `assets/workspace-desktop.png`.
+
+### Endpoints (via `/api/proxy`)
+
+| Endpoint | Uso |
+|----------|-----|
+| `GET/PATCH/DELETE workspaces/{slug}` | Detalhe, nome, timezone |
+| `GET/PATCH/DELETE workspaces/{slug}/members` | Lista e gestão de membros |
+| `POST workspaces/{slug}/members/leave` | Sair do workspace (não-owner) |
+| `GET/POST/DELETE workspaces/{slug}/invites` | Convites (admin) |
+| `POST invites/{token}/accept` | Aceitar convite |
+
+Link de convite: `{NEXT_PUBLIC_APP_URL}/invites/{token}`.
+
+Papéis: `owner`, `admin`, `member`, `viewer`. Guards no frontend espelham o backend (`Can`, `useWorkspacePermissions`).
+
+## FinnAI Score (Fase 6)
+
+Página premium em `/workspaces/{slug}/score` (sidebar: **FinnAI Score**).
+
+Referência visual: `assets/score-desktop.png`.
+
+### Endpoints (via `/api/proxy`)
+
+| Endpoint | Uso |
+|----------|-----|
+| `GET workspaces/{slug}/ai/score` | Score, label, summary, strengths, weaknesses, tips, badges |
+| `POST workspaces/{slug}/ai/regenerate` | Regenerar score (202; debounce no backend) |
+
+### Fluxo de regeneração
+
+1. Usuário confirma em **Regenerar score** (owner/admin/member — `viewer` não pode).
+2. `POST /ai/regenerate` retorna `pending` ou `debounced`.
+3. Frontend faz **polling** em `GET /ai/score` (2s, até ~30s) até `generated_at` mudar.
+4. Overlay **FinnAI analisando…** durante o processamento.
+
+Histórico de evolução: persistido localmente (Zustand) por workspace após cada leitura bem-sucedida.
+
+Feature: `src/features/ai-score/` — importar via `@/features/ai-score`.

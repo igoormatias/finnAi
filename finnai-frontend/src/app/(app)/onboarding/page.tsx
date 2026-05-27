@@ -1,4 +1,4 @@
-import { CreateWorkspaceForm } from "@/features/onboarding/components/create-workspace-form";
+import { CreateWorkspaceForm } from "@/features/onboarding";
 
 export default function OnboardingPage() {
   return (

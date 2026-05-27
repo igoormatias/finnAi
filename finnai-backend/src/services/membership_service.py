@@ -81,3 +81,17 @@ class MembershipService:
 
         await self._memberships.remove_member(target)
         await self._session.commit()
+
+    async def leave_workspace(
+        self,
+        workspace: Workspace,
+        actor: User,
+        actor_membership: WorkspaceMembership,
+    ) -> None:
+        actor_role = WorkspaceRole(actor_membership.role)
+        if is_owner_role(actor_role):
+            raise ForbiddenException("Owner cannot leave workspace")
+        if actor_membership.user_id != actor.id or actor_membership.workspace_id != workspace.id:
+            raise ForbiddenException("Invalid membership context")
+        await self._memberships.remove_member(actor_membership)
+        await self._session.commit()

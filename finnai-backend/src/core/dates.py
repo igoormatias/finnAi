@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 
@@ -21,19 +21,19 @@ def normalize_range_to_utc(*, start: datetime, end: datetime, tz: str) -> DateRa
     end_local = _ensure_tz(end, zone)
     if end_local < start_local:
         raise ValueError("end_date must be >= start_date")
-    return DateRange(start=start_local.astimezone(UTC), end=end_local.astimezone(UTC))
+    return DateRange(start=start_local.astimezone(timezone.utc), end=end_local.astimezone(timezone.utc))
 
 
 def current_month_range_utc(*, now_utc: datetime | None = None, tz: str) -> DateRange:
-    now = now_utc or datetime.now(UTC)
+    now = now_utc or datetime.now(timezone.utc)
     zone = get_zoneinfo(tz)
     now_local = now.astimezone(zone)
     start_local = datetime(year=now_local.year, month=now_local.month, day=1, tzinfo=zone)
-    return DateRange(start=start_local.astimezone(UTC), end=now)
+    return DateRange(start=start_local.astimezone(timezone.utc), end=now)
 
 
 def previous_month_range_utc(*, now_utc: datetime | None = None, tz: str) -> DateRange:
-    now = now_utc or datetime.now(UTC)
+    now = now_utc or datetime.now(timezone.utc)
     zone = get_zoneinfo(tz)
     now_local = now.astimezone(zone)
     first_this_month = datetime(year=now_local.year, month=now_local.month, day=1, tzinfo=zone)
@@ -47,7 +47,10 @@ def previous_month_range_utc(*, now_utc: datetime | None = None, tz: str) -> Dat
         day=1,
         tzinfo=zone,
     ) - timedelta(microseconds=1)
-    return DateRange(start=start_prev_month.astimezone(UTC), end=end_prev_month.astimezone(UTC))
+    return DateRange(
+        start=start_prev_month.astimezone(timezone.utc),
+        end=end_prev_month.astimezone(timezone.utc),
+    )
 
 
 def iter_period_starts_utc(
@@ -60,7 +63,7 @@ def iter_period_starts_utc(
     starts: list[datetime] = []
     cursor = _floor_to_bucket_local(start_local, granularity)
     while cursor <= end_local:
-        starts.append(cursor.astimezone(UTC))
+        starts.append(cursor.astimezone(timezone.utc))
         cursor = _add_bucket_local(cursor, granularity)
     return starts
 

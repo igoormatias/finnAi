@@ -3,14 +3,17 @@ from __future__ import annotations
 import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
 from core.slug import slugify, with_suffix
 from domain.exceptions import ForbiddenException, WorkspaceNotFoundException
 from domain.workspace_roles import WorkspaceRole
 from models.user import User
 from models.workspace import Workspace
+from repositories.category_repository import CategoryRepository
 from repositories.membership_repository import MembershipRepository
 from repositories.workspace_repository import WorkspaceRepository
+from services.default_categories import DEFAULT_CATEGORIES
 
 
 class WorkspaceService:
@@ -18,6 +21,7 @@ class WorkspaceService:
         self._session = session
         self._workspaces = WorkspaceRepository(session)
         self._memberships = MembershipRepository(session)
+        self._categories = CategoryRepository(session)
 
     async def create_workspace(self, user: User, name: str) -> Workspace:
         slug = await self._generate_unique_slug(name)
@@ -27,6 +31,22 @@ class WorkspaceService:
             user_id=user.id,
             role=WorkspaceRole.owner.value,
         )
+        # Seed default finance categories. This is safe to run even if a retry happens,
+        # because categories have a unique constraint and we ignore duplicates.
+        for cat in DEFAULT_CATEGORIES:
+            try:
+                async with self._session.begin_nested():
+                    await self._categories.create(
+                        workspace_id=workspace.id,
+                        name=cat.name,
+                        type=cat.type,
+                        color=cat.color,
+                        icon=cat.icon,
+                        is_fixed=cat.is_fixed,
+                    )
+            except IntegrityError:
+                # Duplicate category (e.g. retry or concurrency) – ignore.
+                continue
         await self._session.commit()
         await self._session.refresh(workspace)
         return workspace
@@ -45,11 +65,12 @@ class WorkspaceService:
         workspace: Workspace,
         *,
         name: str | None,
+        timezone: str | None,
     ) -> Workspace:
         slug = None
         if name is not None:
             slug = await self._generate_unique_slug(name, exclude_workspace_id=workspace.id)
-        updated = await self._workspaces.update(workspace, name=name, slug=slug)
+        updated = await self._workspaces.update(workspace, name=name, slug=slug, timezone=timezone)
         await self._session.commit()
         return updated
 

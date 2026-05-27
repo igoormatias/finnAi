@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -35,13 +35,13 @@ class AIScoreCacheService:
             return False
         last = score.last_requested_at
         if last.tzinfo is None:
-            last = last.replace(tzinfo=UTC)
-        return datetime.now(UTC) - last < timedelta(
+            last = last.replace(tzinfo=timezone.utc)
+        return datetime.now(timezone.utc) - last < timedelta(
             seconds=self._settings.ai_score_debounce_seconds
         )
 
     async def mark_requested(self, score: WorkspaceFinancialScore) -> None:
-        score.last_requested_at = datetime.now(UTC)
+        score.last_requested_at = datetime.now(timezone.utc)
         score.status = "pending"
         await self._session.flush()
 

@@ -13,8 +13,12 @@ export type WorkspaceSection =
   | "accounts"
   | "score"
   | "metas"
+  | "reports"
   | "relatorios"
-  | "workspaces";
+  | "workspaces"
+  | "members"
+  | "invites"
+  | "settings";
 
 export function workspacePath(slug: string, section: WorkspaceSection = "dashboard"): string {
   return `/workspaces/${slug}/${section}`;
@@ -31,9 +35,11 @@ export const PROTECTED_PREFIXES = [
   "/gastos",
   "/score",
   "/metas",
+  "/reports",
   "/relatorios",
   "/workspaces",
   "/onboarding",
+  "/invites",
 ] as const;
 
 export function isProtectedPath(pathname: string): boolean {
@@ -54,18 +60,23 @@ export function getWorkspaceSlugFromPath(pathname: string): string | null {
 export function getWorkspaceSectionFromPath(pathname: string): WorkspaceSection | null {
   const match = pathname.match(/^\/workspaces\/[^/]+\/([^/]+)/);
   const section = match?.[1];
-  if (
-    section === "dashboard" ||
-    section === "transactions" ||
-    section === "gastos" ||
-    section === "categories" ||
-    section === "accounts" ||
-    section === "score" ||
-    section === "metas" ||
-    section === "relatorios" ||
-    section === "workspaces"
-  ) {
-    return section;
+  const sections: WorkspaceSection[] = [
+    "dashboard",
+    "transactions",
+    "gastos",
+    "categories",
+    "accounts",
+    "score",
+    "metas",
+    "reports",
+    "relatorios",
+    "workspaces",
+    "members",
+    "invites",
+    "settings",
+  ];
+  if (section && sections.includes(section as WorkspaceSection)) {
+    return section as WorkspaceSection;
   }
   return null;
 }

@@ -1,4 +1,4 @@
-import { AuthSkeleton } from "@/features/auth/components/auth-skeleton";
+import { AuthSkeleton } from "@/features/auth";
 
 export default function LoginLoading() {
   return (

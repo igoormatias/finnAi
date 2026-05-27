@@ -1,6 +1,6 @@
 "use client";
 
-import { FinanceCategoriesPage } from "@/features/finance/components/categories/finance-categories-page";
+import { FinanceCategoriesPage } from "@/features/finance";
 
 export default function CategoriesPage() {
   return <FinanceCategoriesPage />;

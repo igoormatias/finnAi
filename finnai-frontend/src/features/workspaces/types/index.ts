@@ -1,8 +1,10 @@
-export type Workspace = {
-  id: string;
-  name: string;
-  slug: string;
-  owner_id: string;
-  created_at: string;
-  updated_at: string;
-};
+export type { Workspace } from "./workspace-collaboration-types";
+export type {
+  WorkspaceRole,
+  WorkspaceMember,
+  WorkspaceInvite,
+  WorkspaceUpdateInput,
+  InviteCreateInput,
+  MembershipRoleUpdateInput,
+  InviteStatus,
+} from "./workspace-collaboration-types";

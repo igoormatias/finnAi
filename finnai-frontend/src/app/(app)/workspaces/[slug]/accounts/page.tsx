@@ -1,6 +1,6 @@
 "use client";
 
-import { FinanceAccountsPage } from "@/features/finance/components/accounts/finance-accounts-page";
+import { FinanceAccountsPage } from "@/features/finance";
 
 export default function AccountsPage() {
   return <FinanceAccountsPage />;

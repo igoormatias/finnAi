@@ -45,12 +45,19 @@ class WorkspaceRepository:
         return list(result.scalars().unique().all())
 
     async def update(
-        self, workspace: Workspace, *, name: str | None, slug: str | None
+        self,
+        workspace: Workspace,
+        *,
+        name: str | None,
+        slug: str | None,
+        timezone: str | None = None,
     ) -> Workspace:
         if name is not None:
             workspace.name = name
         if slug is not None:
             workspace.slug = slug
+        if timezone is not None:
+            workspace.timezone = timezone
         await self._session.flush()
         await self._session.refresh(workspace)
         return workspace

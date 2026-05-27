@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator, Generator
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 import pytest_asyncio
@@ -32,6 +32,7 @@ def _test_environment(monkeypatch: pytest.MonkeyPatch) -> Generator[None, None, 
     monkeypatch.setenv("JWT_REFRESH_SECRET_KEY", TEST_REFRESH_SECRET)
     monkeypatch.setenv("ACCESS_TOKEN_EXPIRE_MINUTES", "15")
     monkeypatch.setenv("REFRESH_TOKEN_EXPIRE_DAYS", "30")
+    monkeypatch.setenv("AUTH_COOKIE_NAME", "refresh_token")
     clear_settings_cache()
     yield
     clear_settings_cache()
@@ -61,7 +62,7 @@ class FakeGoogleTokenVerifier:
                 "name": name,
                 "picture": "https://example.com/avatar.png",
                 "aud": TEST_GOOGLE_CLIENT_ID,
-                "exp": int((datetime.now(UTC) + timedelta(hours=1)).timestamp()),
+                "exp": int((datetime.now(timezone.utc) + timedelta(hours=1)).timestamp()),
             }
         )
 

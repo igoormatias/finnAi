@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 
-import { AuthSkeleton } from "@/features/auth/components/auth-skeleton";
+import { AuthSkeleton } from "@/features/auth";
 import { LoginContent } from "@/app/(auth)/login/login-content";
 
 export default function LoginPage() {

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from fastapi.testclient import TestClient
 
@@ -47,7 +47,7 @@ def test_transaction_balance_create_update_delete(client: TestClient) -> None:
     cat_expense = _create_category(client, token, slug, "expense")
     account_id = _create_account(client, token, slug, initial=1000)
 
-    now = datetime.now(UTC)
+    now = datetime.now(timezone.utc)
 
     created = client.post(
         f"/workspaces/{slug}/transactions",
@@ -105,7 +105,7 @@ def test_transactions_filters_pagination_sorting_and_dashboard_summary(client: T
     cat_expense = _create_category(client, token, slug, "expense")
     account_id = _create_account(client, token, slug, initial=0)
 
-    now = datetime.now(UTC)
+    now = datetime.now(timezone.utc)
     earlier = now - timedelta(days=5)
 
     t1 = client.post(

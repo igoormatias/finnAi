@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
-from typing import Literal
+from typing import Generic, Literal, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -12,8 +12,10 @@ TransactionTypeLiteral = Literal["income", "expense"]
 RecurrenceRuleLiteral = Literal["weekly", "monthly", "yearly"]
 TransactionSortLiteral = Literal["newest", "oldest", "amount_asc", "amount_desc"]
 
+T = TypeVar("T")
 
-class PaginatedResponse[T](BaseModel):
+
+class PaginatedResponse(BaseModel, Generic[T]):
     total: int
     items: list[T]
     limit: int

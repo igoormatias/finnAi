@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -152,16 +152,28 @@ class AnalyticsRepository:
         if granularity not in {"daily", "weekly", "monthly", "yearly"}:
             raise ValueError("Invalid granularity")
 
-        # Use UTC bucketing; tz-specific buckets are handled at service layer by building bucket boundaries.
-        # Here we aggregate by trunc in UTC to keep portable across sqlite/postgres tests.
-        if granularity == "daily":
-            bucket = func.date(Transaction.transaction_date)
-        elif granularity == "weekly":
-            bucket = func.strftime("%Y-%W", Transaction.transaction_date)
-        elif granularity == "monthly":
-            bucket = func.strftime("%Y-%m", Transaction.transaction_date)
+        bind = self._session.get_bind()
+        dialect = bind.dialect.name if bind is not None else ""
+
+        if dialect == "postgresql":
+            if granularity == "daily":
+                bucket = func.date_trunc("day", Transaction.transaction_date)
+            elif granularity == "weekly":
+                bucket = func.date_trunc("week", Transaction.transaction_date)
+            elif granularity == "monthly":
+                bucket = func.date_trunc("month", Transaction.transaction_date)
+            else:
+                bucket = func.date_trunc("year", Transaction.transaction_date)
         else:
-            bucket = func.strftime("%Y", Transaction.transaction_date)
+            # SQLite fallback.
+            if granularity == "daily":
+                bucket = func.date(Transaction.transaction_date)
+            elif granularity == "weekly":
+                bucket = func.strftime("%Y-%W", Transaction.transaction_date)
+            elif granularity == "monthly":
+                bucket = func.strftime("%Y-%m", Transaction.transaction_date)
+            else:
+                bucket = func.strftime("%Y", Transaction.transaction_date)
 
         income_sum = func.coalesce(
             func.sum(case((Transaction.type == "income", Transaction.amount_cents), else_=0)),
@@ -182,18 +194,24 @@ class AnalyticsRepository:
         result = await self._session.execute(stmt)
         rows: list[tuple[datetime, int, int]] = []
         for b, inc, exp in result.all():
-            # Represent bucket as datetime start in UTC (best-effort for sqlite string buckets)
-            if isinstance(b, str):
+            if isinstance(b, datetime):
+                dt = b
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+            elif isinstance(b, str):
+                # Represent bucket as datetime start in UTC (best-effort for sqlite string buckets)
                 if granularity == "weekly":
                     year, week = b.split("-", 1)
-                    dt = datetime.fromisocalendar(int(year), int(week) + 1, 1).replace(tzinfo=UTC)
+                    dt = datetime.fromisocalendar(int(year), int(week) + 1, 1).replace(
+                        tzinfo=timezone.utc
+                    )
                 elif granularity == "monthly":
-                    dt = datetime(int(b[0:4]), int(b[5:7]), 1, tzinfo=UTC)
+                    dt = datetime(int(b[0:4]), int(b[5:7]), 1, tzinfo=timezone.utc)
                 elif granularity == "yearly":
-                    dt = datetime(int(b), 1, 1, tzinfo=UTC)
+                    dt = datetime(int(b), 1, 1, tzinfo=timezone.utc)
                 else:
-                    dt = datetime.fromisoformat(b).replace(tzinfo=UTC)
+                    dt = datetime.fromisoformat(b).replace(tzinfo=timezone.utc)
             else:
-                dt = datetime.fromisoformat(str(b)).replace(tzinfo=UTC)
+                dt = datetime.fromisoformat(str(b)).replace(tzinfo=timezone.utc)
             rows.append((dt, int(inc), int(exp)))
         return rows

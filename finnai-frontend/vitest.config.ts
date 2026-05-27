@@ -9,6 +9,9 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     globals: true,
     css: true,
+    pool: "forks",
+    maxWorkers: 1,
+    fileParallelism: false,
   },
 });
 

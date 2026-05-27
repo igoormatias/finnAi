@@ -84,22 +84,39 @@ navigation/
 
 ## 🧠 Naming (OBRIGATÓRIO)
 
-### Componentes
+### Componentes React
+
+- Pasta e arquivo principal: **PascalCase** (`WorkspaceHubPage/WorkspaceHubPage.tsx`)
+- Export: **arrow function** com props tipadas (`ComponentName.types.ts` quando necessário)
+- Evitar `export function` em componentes
+
+### Hooks, services, utils
 
 ```bash
-PascalCase.tsx
+use-workspace-members/use-workspace-members.ts   # kebab-case
+workspace-service/workspace-service.ts
+invite-link/invite-link.ts
 ```
 
-### Arquivos comuns
+### Hooks (nome do arquivo)
 
 ```bash
-kebab-case.ts
+use-something.ts
 ```
 
-### Hooks
+---
 
-```bash
-useSomething.ts
+## 📦 Barrel exports (OBRIGATÓRIO)
+
+Todo módulo relevante: pasta própria + `index.ts`.
+
+```ts
+// ✅ correto
+import { WorkspaceHubPage } from "@/features/workspaces";
+import { Button } from "@/components/ui";
+
+// ❌ errado — deep import
+import { WorkspaceHubPage } from "@/features/workspaces/components/WorkspaceHubPage/WorkspaceHubPage";
 ```
 
 ---
@@ -131,8 +148,14 @@ export default function Page() {
 ## 📱💻 Responsividade (OBRIGATÓRIO)
 
 ### Regra
+
 - O site deve ser **responsivo** e **mobile-first**.
-- **Os prints em `assets/` são referência visual oficial, mas são majoritariamente desktop**.\n+  Portanto, toda tela deve:\n+  - ser implementada com base no desktop\n+  - e **adaptada para mobile/tablet** (não “espremer” desktop no mobile)\n+  - **simplificando a navegação** quando necessário (ex.: sidebar → drawer; menus → bottom nav; reduzir densidade e reordenar cards)\n+- **Desktop não pode ser “mobile esticado”**: precisa de layout pensado para desktop.\n+- **Mobile não pode ser “desktop comprimido”**: precisa de UX próprio.
+- Os prints em `assets/` são referência visual oficial, mas são majoritariamente **desktop**. Toda tela deve:
+  - ser implementada com base no desktop;
+  - ser **adaptada para mobile/tablet** (não “espremer” desktop no mobile);
+  - simplificar navegação quando necessário (sidebar → drawer, menus compactos, cards reordenados).
+- **Desktop** não pode ser “mobile esticado”.
+- **Mobile** não pode ser “desktop comprimido”.
 
 ### Breakpoints
 - **Desktop**: `>= 1024px` (`lg:`)
@@ -150,16 +173,24 @@ export default function Page() {
 - **Toda alteração de código deve incluir teste novo ou teste atualizado.**
 - Exceções permitidas: **docs** (`*.md`) e **chore/config sem lógica** (ex.: formatação, renome de pasta, configs sem comportamento).
 
+### Colocalização (OBRIGATÓRIO)
+
+- Testes ficam **ao lado** do módulo (`WorkspaceSwitcher.test.tsx` junto de `WorkspaceSwitcher.tsx`).
+- **Proibido** pasta `__tests__/` dentro de `src/features/*`.
+
 ### Tipos de teste
+
 - **Unit**: `*.test.ts` para `utils/`, `services/` e funções puras
 - **Component**: `*.test.tsx` com Testing Library para componentes React
 
 ### Antes de finalizar uma tarefa
+
 Rodar sempre:
 
 ```bash
-yarn lint
-yarn test
+pnpm lint
+pnpm test
+pnpm build
 ```
 
 ---

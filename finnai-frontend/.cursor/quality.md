@@ -1,5 +1,7 @@
 # Frontend Quality Rules
 
+> Fonte canônica de arquitetura: [rules.md](./rules.md) · Checklist agents: [../AGENTS.md](../AGENTS.md)
+
 ## 🎯 Objetivo
 
 Garantir **qualidade, consistência e manutenibilidade**.
