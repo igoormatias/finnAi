@@ -1,8 +1,10 @@
-export default function MetasPage() {
-  return (
-    <section className="grid gap-2">
-      <h1 className="text-xl font-semibold tracking-tight">Metas</h1>
-      <p className="text-sm text-muted">Página placeholder — próxima fase.</p>
-    </section>
-  );
+import { redirect } from "next/navigation";
+
+type Props = {
+  params: Promise<{ slug: string }>;
+};
+
+export default async function MetasRedirectPage({ params }: Props) {
+  const { slug } = await params;
+  redirect(`/workspaces/${slug}/goals`);
 }

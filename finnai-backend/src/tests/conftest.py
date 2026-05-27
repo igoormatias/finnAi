@@ -84,6 +84,8 @@ async def db_session(tmp_path) -> AsyncGenerator[AsyncSession, None]:
             workspace as _workspace,  # noqa: F401
             workspace_invite as _workspace_invite,  # noqa: F401
             workspace_membership as _workspace_membership,  # noqa: F401
+            workspace_goal as _workspace_goal,  # noqa: F401
+            workspace_financial_score as _workspace_financial_score,  # noqa: F401
         )
 
         await connection.run_sync(Base.metadata.create_all)
@@ -133,6 +135,8 @@ def client_isolated(tmp_path, monkeypatch: pytest.MonkeyPatch) -> Generator[Test
             workspace as _workspace,  # noqa: F401
             workspace_invite as _workspace_invite,  # noqa: F401
             workspace_membership as _workspace_membership,  # noqa: F401
+            workspace_goal as _workspace_goal,  # noqa: F401
+            workspace_financial_score as _workspace_financial_score,  # noqa: F401
         )
 
         engine = create_async_engine(url)

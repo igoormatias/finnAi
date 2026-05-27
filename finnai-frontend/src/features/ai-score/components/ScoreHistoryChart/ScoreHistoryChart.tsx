@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import { useReducedMotion } from "framer-motion";
 import {
   CartesianGrid,
   Line,
@@ -14,7 +15,11 @@ import {
 import type { ScoreHistoryPoint } from "../../types";
 import { ChartEmpty } from "@/features/dashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
-import { CHART_COLORS, chartTooltipStyle } from "@/features/dashboard";
+import {
+  CHART_COLORS,
+  chartAnimationDuration,
+  chartTooltipStyle,
+} from "@/features/dashboard";
 
 type ScoreHistoryChartProps = {
   history: ScoreHistoryPoint[];
@@ -25,6 +30,7 @@ function formatLabel(iso: string) {
 }
 
 export const ScoreHistoryChart = memo(({ history }: ScoreHistoryChartProps) => {
+  const reduceMotion = useReducedMotion();
   const data = history.map((p) => ({
     label: formatLabel(p.generated_at),
     score: p.score,
@@ -53,7 +59,8 @@ export const ScoreHistoryChart = memo(({ history }: ScoreHistoryChartProps) => {
                     stroke={CHART_COLORS.primary}
                     strokeWidth={2}
                     dot={{ r: 3, fill: CHART_COLORS.primary }}
-                    animationDuration={800}
+                    isAnimationActive={!reduceMotion}
+                    animationDuration={chartAnimationDuration}
                   />
                 </LineChart>
               </ResponsiveContainer>

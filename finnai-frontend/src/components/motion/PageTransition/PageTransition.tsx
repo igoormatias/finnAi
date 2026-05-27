@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { usePathname } from "next/navigation";
 
 import { fadeUp } from "@/lib/motion/variants";
+import { motionTokens } from "@/lib/motion/tokens";
 
 export const PageTransition = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
@@ -19,11 +20,10 @@ export const PageTransition = ({ children }: { children: React.ReactNode }) => {
         initial="hidden"
         animate="visible"
         exit={{ opacity: 0, y: 8 }}
-        transition={{ duration: 0.2, ease: "easeOut" }}
+        transition={{ duration: motionTokens.base, ease: motionTokens.easeOut }}
       >
         {children}
       </motion.div>
     </AnimatePresence>
   );
-}
-
+};

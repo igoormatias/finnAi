@@ -38,7 +38,7 @@ export const FinnAIScorePage = () => {
 
   if (status === "generating") {
     return (
-      <section className="grid gap-6 p-4 md:p-6">
+      <section className="grid gap-6">
         <header>
           <p className="text-xs font-medium uppercase tracking-wider text-primary">
             Inteligência artificial
@@ -118,7 +118,7 @@ export const FinnAIScorePage = () => {
 
   if (status === "empty") {
     return (
-      <section className="grid gap-6 p-4 md:p-6">
+      <section className="grid gap-6">
         <header>
           <p className="text-xs font-medium uppercase tracking-wider text-primary">Inteligência artificial</p>
           <h1 className="text-2xl font-semibold tracking-tight">FinnAI Score</h1>
@@ -138,7 +138,7 @@ export const FinnAIScorePage = () => {
   }
 
   return (
-    <section className="relative grid gap-6 p-4 md:p-6">
+    <section className="relative grid gap-6">
       {isGenerating && <AIScoreThinking />}
 
       <motion.header

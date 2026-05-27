@@ -24,11 +24,20 @@ const config: Config = {
         sm: "var(--radius-sm)",
         md: "var(--radius-md)",
         lg: "var(--radius-lg)",
+        xl: "var(--radius-xl)",
       },
       boxShadow: {
         soft: "var(--shadow-soft)",
         elevated: "var(--shadow-elevated)",
         "glow-primary": "var(--glow-primary)",
+      },
+      transitionDuration: {
+        fast: "var(--motion-fast)",
+        base: "var(--motion-base)",
+        slow: "var(--motion-slow)",
+      },
+      transitionTimingFunction: {
+        premium: "var(--ease-out-premium)",
       },
     },
   },
@@ -36,4 +45,3 @@ const config: Config = {
 };
 
 export default config;
-

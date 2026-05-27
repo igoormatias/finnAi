@@ -52,8 +52,8 @@ export function buildNavItems(slug: string): AppNavItem[] {
       icon: Gauge,
     },
     {
-      section: "metas",
-      href: workspacePath(slug, "metas"),
+      section: "goals",
+      href: workspacePath(slug, "goals"),
       label: "Metas",
       icon: Target,
     },

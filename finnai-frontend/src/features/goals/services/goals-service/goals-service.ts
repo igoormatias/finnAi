@@ -1,0 +1,49 @@
+import { apiFetch } from "@/shared/api/client";
+
+import type {
+  Goal,
+  GoalCreateInput,
+  GoalUpdateInput,
+  GoalsOverview,
+} from "../../types";
+
+export async function listGoals(slug: string): Promise<Goal[]> {
+  return apiFetch<Goal[]>(`workspaces/${slug}/goals`);
+}
+
+export async function getGoalsOverview(slug: string): Promise<GoalsOverview> {
+  return apiFetch<GoalsOverview>(`workspaces/${slug}/goals/overview`);
+}
+
+export async function createGoal(slug: string, input: GoalCreateInput): Promise<Goal> {
+  return apiFetch<Goal>(`workspaces/${slug}/goals`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function updateGoal(
+  slug: string,
+  goalId: string,
+  input: GoalUpdateInput
+): Promise<Goal> {
+  return apiFetch<Goal>(`workspaces/${slug}/goals/${goalId}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function addGoalContribution(
+  slug: string,
+  goalId: string,
+  amountCents: number
+): Promise<Goal> {
+  return apiFetch<Goal>(`workspaces/${slug}/goals/${goalId}/contributions`, {
+    method: "POST",
+    body: JSON.stringify({ amount_cents: amountCents }),
+  });
+}
+
+export async function deleteGoal(slug: string, goalId: string): Promise<void> {
+  return apiFetch<void>(`workspaces/${slug}/goals/${goalId}`, { method: "DELETE" });
+}

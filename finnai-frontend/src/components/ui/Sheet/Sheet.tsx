@@ -9,8 +9,6 @@ export const Sheet = DialogPrimitive.Root;
 export const SheetTrigger = DialogPrimitive.Trigger;
 export const SheetClose = DialogPrimitive.Close;
 export const SheetPortal = DialogPrimitive.Portal;
-export const SheetTitle = DialogPrimitive.Title;
-export const SheetDescription = DialogPrimitive.Description;
 
 export const SheetOverlay = ({
   className,
@@ -56,5 +54,26 @@ export const SheetContent = ({
 
 export const SheetHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
   return <div className={cn("grid gap-1.5", className)} {...props} />;
-}
+};
+
+export const SheetTitle = ({
+  className,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Title>) => {
+  return (
+    <DialogPrimitive.Title
+      className={cn("text-base font-semibold text-foreground", className)}
+      {...props}
+    />
+  );
+};
+
+export const SheetDescription = ({
+  className,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Description>) => {
+  return (
+    <DialogPrimitive.Description className={cn("text-sm text-muted", className)} {...props} />
+  );
+};
 

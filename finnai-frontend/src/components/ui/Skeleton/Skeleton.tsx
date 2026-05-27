@@ -1,11 +1,19 @@
 import { cn } from "@/lib/utils";
 
-export const Skeleton = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
+export type SkeletonProps = React.HTMLAttributes<HTMLDivElement> & {
+  shimmer?: boolean;
+};
+
+export const Skeleton = ({ className, shimmer = true, ...props }: SkeletonProps) => {
   return (
     <div
-      className={cn("animate-pulse rounded-xl bg-elevated/40", className)}
+      aria-hidden
+      className={cn(
+        "rounded-xl",
+        shimmer ? "skeleton-shimmer" : "animate-pulse bg-elevated/40",
+        className
+      )}
       {...props}
     />
   );
-}
-
+};

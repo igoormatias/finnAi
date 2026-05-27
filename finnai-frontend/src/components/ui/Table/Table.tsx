@@ -8,30 +8,33 @@ export const Table = ({ className, ...props }: React.HTMLAttributes<HTMLTableEle
       <table className={cn("w-full caption-bottom text-sm", className)} {...props} />
     </div>
   );
-}
+};
 
 export const TableHeader = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLTableSectionElement>) => {
   return <thead className={cn("bg-elevated/30", className)} {...props} />;
-}
+};
 
 export const TableBody = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLTableSectionElement>) => {
   return <tbody className={cn("[&_tr:last-child]:border-0", className)} {...props} />;
-}
+};
 
 export const TableRow = ({ className, ...props }: React.HTMLAttributes<HTMLTableRowElement>) => {
   return (
     <tr
-      className={cn("border-b border-border transition-colors hover:bg-elevated/20", className)}
+      className={cn(
+        "border-b border-border transition-colors hover:bg-elevated/25 focus-within:bg-elevated/20",
+        className
+      )}
       {...props}
     />
   );
-}
+};
 
 export const TableHead = ({ className, ...props }: React.ThHTMLAttributes<HTMLTableCellElement>) => {
   return (
@@ -43,9 +46,25 @@ export const TableHead = ({ className, ...props }: React.ThHTMLAttributes<HTMLTa
       {...props}
     />
   );
-}
+};
 
 export const TableCell = ({ className, ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) => {
   return <td className={cn("p-4 align-middle text-sm text-foreground", className)} {...props} />;
-}
+};
 
+export const TableEmpty = ({
+  colSpan,
+  title = "Nenhum registro encontrado",
+  description,
+}: {
+  colSpan: number;
+  title?: string;
+  description?: string;
+}) => (
+  <tr>
+    <td colSpan={colSpan} className="p-8 text-center">
+      <p className="text-sm font-medium text-foreground">{title}</p>
+      {description ? <p className="mt-1 text-sm text-muted">{description}</p> : null}
+    </td>
+  </tr>
+);

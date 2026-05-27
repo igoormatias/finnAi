@@ -1,4 +1,4 @@
-/* FinnAI design tokens (v1) — dark premium fintech */
+/* FinnAI design tokens (v2) — dark premium fintech */
 
 :root {
   /* Brand */
@@ -30,16 +30,43 @@
   --warning: #f59e0b;
   --danger: var(--color-tertiary);
 
+  /* Spacing scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  /* Typography */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+
   /* Radius + shadow */
   --radius-sm: 10px;
   --radius-md: 14px;
   --radius-lg: 18px;
+  --radius-xl: 22px;
   --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.35);
   --shadow-elevated: 0 16px 60px rgba(0, 0, 0, 0.55);
+
+  /* Focus */
+  --focus-ring: 0 0 0 2px color-mix(in oklab, var(--color-primary), transparent 60%);
 
   /* Glow */
   --glow-primary: 0 0 0 1px color-mix(in oklab, var(--color-primary), transparent 70%),
     0 0 40px color-mix(in oklab, var(--color-primary), transparent 75%);
+
+  /* Motion */
+  --motion-fast: 150ms;
+  --motion-base: 220ms;
+  --motion-slow: 320ms;
+  --ease-out-premium: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 html.light {
@@ -49,5 +76,8 @@ html.light {
   --border: #e6e8ef;
   --muted: #5b6475;
   --foreground: #0b0c0f;
+  --shadow-soft: 0 10px 30px rgba(15, 17, 22, 0.08);
+  --shadow-elevated: 0 16px 48px rgba(15, 17, 22, 0.12);
+  --glow-primary: 0 0 0 1px color-mix(in oklab, var(--color-primary), transparent 80%),
+    0 0 24px color-mix(in oklab, var(--color-primary), transparent 88%);
 }
-

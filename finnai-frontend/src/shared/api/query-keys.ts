@@ -32,4 +32,8 @@ export const queryKeys = {
   aiScore: {
     detail: (slug: string) => ["ai-score", slug] as const,
   },
+  goals: {
+    list: (slug: string) => ["goals", slug, "list"] as const,
+    overview: (slug: string) => ["goals", slug, "overview"] as const,
+  },
 } as const;

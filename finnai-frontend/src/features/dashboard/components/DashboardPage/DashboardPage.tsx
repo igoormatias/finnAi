@@ -3,6 +3,8 @@
 import dynamic from "next/dynamic";
 import { useState } from "react";
 
+import { PageContainer } from "@/components/layout/PageContainer";
+import { StaggerChildren, StaggerItem } from "@/components/motion";
 import { ChartSkeleton } from "@/features/dashboard";
 import { DashboardHeader } from "@/features/dashboard";
 import { SummaryCards } from "@/features/dashboard";
@@ -32,14 +34,18 @@ export const DashboardPage = () => {
   const [range, setRange] = useState<DateRangePreset>("30d");
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
+    <PageContainer size="wide">
       <DashboardHeader range={range} onRangeChange={setRange} />
       <SummaryCards />
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <CashflowChart range={range} />
-        <CategoryDonutChart range={range} />
-      </div>
+      <StaggerChildren className="grid gap-4 lg:grid-cols-3">
+        <StaggerItem className="lg:col-span-2">
+          <CashflowChart range={range} />
+        </StaggerItem>
+        <StaggerItem>
+          <CategoryDonutChart range={range} />
+        </StaggerItem>
+      </StaggerChildren>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <TrendsPanel />
@@ -50,6 +56,6 @@ export const DashboardPage = () => {
       <div className="grid gap-4 lg:grid-cols-3">
         <TransactionsPreview />
       </div>
-    </div>
+    </PageContainer>
   );
-}
+};

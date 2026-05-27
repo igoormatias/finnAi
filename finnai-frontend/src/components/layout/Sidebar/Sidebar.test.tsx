@@ -53,4 +53,11 @@ describe("Sidebar", () => {
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
     expect(screen.getByText("Sair")).toBeInTheDocument();
   });
+
+  it("uses floating sidebar container styles", () => {
+    const { container } = render(<Sidebar collapsed={false} onToggleCollapsed={() => {}} />);
+    const aside = container.querySelector("aside");
+    expect(aside?.className).toMatch(/rounded-2xl/);
+    expect(aside?.className).toMatch(/h-\[calc\(100dvh-2rem\)\]/);
+  });
 });

@@ -16,6 +16,8 @@ vi.mock("../../hooks/use-ai-score-state", () => ({
       tips: ["Revise assinaturas"],
       badges: ["Economista Nato"],
       generated_at: new Date().toISOString(),
+      status: "idle",
+      is_stale: false,
     },
     history: [
       { score: 70, generated_at: "2026-04-01T00:00:00Z" },

@@ -23,7 +23,9 @@ export function applyPendingScoreOptimistic(score: FinnAIScore | null | undefine
   };
 }
 
-export function isScorePopulated(score: FinnAIScore | null | undefined): boolean {
+export function isScorePopulated(
+  score: FinnAIScore | null | undefined
+): score is FinnAIScore {
   return (
     !!score &&
     score.status === "idle" &&

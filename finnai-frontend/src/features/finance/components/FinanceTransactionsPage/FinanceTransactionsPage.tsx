@@ -80,7 +80,7 @@ export const FinanceTransactionsPage = () => {
   const onClear = () => setFilters(defaultFilters());
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
+    <div className="space-y-6">
       <motion.div
         initial={reduceMotion ? undefined : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}

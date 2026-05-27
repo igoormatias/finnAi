@@ -56,7 +56,7 @@ export const AIRecommendations = ({ tips }: AIRecommendationsProps) => {
           <Link href={workspacePath(slug, "transactions")}>Ver gastos</Link>
         </Button>
         <Button variant="outline" asChild className="cursor-pointer">
-          <Link href={workspacePath(slug, "metas")}>Metas sugeridas</Link>
+          <Link href={workspacePath(slug, "goals")}>Metas sugeridas</Link>
         </Button>
       </div>
     </motion.div>

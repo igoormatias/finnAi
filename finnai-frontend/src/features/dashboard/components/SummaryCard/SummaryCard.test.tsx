@@ -17,6 +17,6 @@ describe("SummaryCard", () => {
     const { container } = render(
       <SummaryCard title="Saldo" valueCents={0} icon={Wallet} loading />
     );
-    expect(container.querySelector(".animate-pulse")).toBeTruthy();
+    expect(container.querySelector(".skeleton-shimmer")).toBeTruthy();
   });
 });

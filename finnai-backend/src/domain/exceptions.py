@@ -55,6 +55,10 @@ class CategoryNotFoundException(DomainException):
     pass
 
 
+class GoalNotFoundException(DomainException):
+    pass
+
+
 class AccountNotFoundException(DomainException):
     pass
 

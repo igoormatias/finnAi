@@ -9,6 +9,7 @@ from domain.exceptions import (
     AIProviderException,
     AIScoreNotFoundException,
     CategoryNotFoundException,
+    GoalNotFoundException,
     DomainException,
     DuplicateInviteException,
     ForbiddenException,
@@ -62,6 +63,10 @@ def register_exception_handlers(app: FastAPI) -> None:
     async def category_not_found_handler(
         _: Request, exc: CategoryNotFoundException
     ) -> JSONResponse:
+        return JSONResponse(status_code=404, content={"detail": exc.message})
+
+    @app.exception_handler(GoalNotFoundException)
+    async def goal_not_found_handler(_: Request, exc: GoalNotFoundException) -> JSONResponse:
         return JSONResponse(status_code=404, content={"detail": exc.message})
 
     @app.exception_handler(AccountNotFoundException)

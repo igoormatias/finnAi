@@ -13,6 +13,7 @@ export type WorkspaceSection =
   | "accounts"
   | "score"
   | "metas"
+  | "goals"
   | "reports"
   | "relatorios"
   | "workspaces"
@@ -68,6 +69,7 @@ export function getWorkspaceSectionFromPath(pathname: string): WorkspaceSection 
     "accounts",
     "score",
     "metas",
+    "goals",
     "reports",
     "relatorios",
     "workspaces",
