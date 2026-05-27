@@ -72,7 +72,9 @@ class TransactionService:
             self._apply_delta(account, self._delta(type, amount_cents))
             await self._session.flush()
             await self._session.refresh(tx)
-            return tx
+
+        await self._session.commit()
+        return tx
 
     async def get_transaction(
         self, *, workspace: Workspace, transaction_id: uuid.UUID
@@ -182,7 +184,9 @@ class TransactionService:
             )
             await self._session.flush()
             await self._session.refresh(updated)
-            return updated
+
+        await self._session.commit()
+        return updated
 
     async def delete_transaction(self, *, workspace: Workspace, transaction_id: uuid.UUID) -> None:
         async with self._session.begin_nested():
@@ -193,6 +197,8 @@ class TransactionService:
             account = await self._get_account_for_update(workspace.id, tx.account_id)
             self._apply_delta(account, -self._delta(TransactionType(tx.type), int(tx.amount_cents)))
             await self._transactions.delete(tx)
+
+        await self._session.commit()
 
     @staticmethod
     def assert_can_write(membership: WorkspaceMembership) -> None:

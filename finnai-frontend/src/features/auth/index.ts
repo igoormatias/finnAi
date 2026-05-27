@@ -4,6 +4,7 @@ export * from "./hooks/use-auth";
 export * from "./hooks/use-protected-route";
 export * from "./hooks/use-session";
 export * from "./services/auth-service";
+export * from "./services/force-sign-out";
 export * from "./services/session-service";
 export * from "./services/token-refresh-service";
 export * from "./types";

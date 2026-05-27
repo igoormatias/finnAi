@@ -39,6 +39,51 @@ def _create_account(client: TestClient, token: str, slug: str, initial: int = 10
     return res.json()["id"]
 
 
+def test_transaction_persists_across_isolated_requests(client_isolated: TestClient) -> None:
+    """Regression: POST must commit so a subsequent GET sees the transaction."""
+    token = login(client_isolated, "persist@example.com")
+    slug = _create_workspace(client_isolated, token, "Persist WS")
+
+    cat_expense = _create_category(client_isolated, token, slug, "expense")
+    account_id = _create_account(client_isolated, token, slug, initial=1000)
+
+    now = datetime.now(timezone.utc)
+
+    created = client_isolated.post(
+        f"/workspaces/{slug}/transactions",
+        json={
+            "account_id": account_id,
+            "category_id": cat_expense,
+            "type": "expense",
+            "amount_cents": 500,
+            "description": "Supermercado",
+            "notes": None,
+            "transaction_date": now.isoformat(),
+            "is_recurring": False,
+            "recurrence_rule": None,
+        },
+        headers=auth_headers(token),
+    )
+    assert created.status_code == 201
+    tx_id = created.json()["id"]
+
+    listed = client_isolated.get(
+        f"/workspaces/{slug}/transactions?limit=20&offset=0&sort=newest",
+        headers=auth_headers(token),
+    )
+    assert listed.status_code == 200
+    body = listed.json()
+    assert body["total"] >= 1
+    assert any(item["id"] == tx_id for item in body["items"])
+
+    acc = client_isolated.get(
+        f"/workspaces/{slug}/accounts/{account_id}",
+        headers=auth_headers(token),
+    )
+    assert acc.status_code == 200
+    assert acc.json()["current_balance_cents"] == 500
+
+
 def test_transaction_balance_create_update_delete(client: TestClient) -> None:
     token = login(client, "owner@example.com")
     slug = _create_workspace(client, token, "Saldo WS")

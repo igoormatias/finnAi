@@ -10,6 +10,7 @@ export function LoginContent() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? ROUTES.dashboard;
   const error = searchParams.get("error");
+  const sessionExpired = error === "session_expired";
 
   return (
     <div className="min-h-dvh bg-bg px-4 py-10 text-foreground">
@@ -63,7 +64,12 @@ export function LoginContent() {
               Acesse sua inteligência financeira com um clique.
             </p>
 
-            {error && (
+            {sessionExpired && (
+              <p className="mt-4 rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+                Sua sessão expirou. Entre novamente com Google para continuar.
+              </p>
+            )}
+            {error && !sessionExpired && (
               <p className="mt-4 rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
                 Falha na autenticação. Tente novamente.
               </p>

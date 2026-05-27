@@ -1,18 +1,16 @@
 "use client";
 
-import { signIn as nextAuthSignIn, signOut as nextAuthSignOut, useSession } from "next-auth/react";
+import { signIn as nextAuthSignIn, useSession } from "next-auth/react";
 import { useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { logout } from "@/features/auth";
+import { forceSignOut } from "../../services/force-sign-out";
 import { useAuthStore } from "@/features/auth/store/auth-store";
 import { ROUTES } from "@/shared/config/routes";
 
 export function useAuth() {
   const { data: session, status } = useSession();
-  const router = useRouter();
-  const { user, accessToken, setUser, setAccessToken, clear } = useAuthStore();
+  const { user, accessToken, setUser, setAccessToken } = useAuthStore();
 
   const isLoading = status === "loading";
   const isAuthenticated = status === "authenticated";
@@ -29,15 +27,14 @@ export function useAuth() {
 
   const signOut = useCallback(async () => {
     try {
-      await logout();
-      clear();
-      await nextAuthSignOut({ redirect: false });
-      router.push(ROUTES.home);
-      router.refresh();
+      await forceSignOut({
+        showSessionExpiredToast: false,
+        redirectPath: ROUTES.home,
+      });
     } catch {
       toast.error("Erro ao sair da conta.");
     }
-  }, [clear, router]);
+  }, []);
 
   const syncFromSession = useCallback(() => {
     if (session?.user) {

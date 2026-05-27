@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from collections.abc import AsyncGenerator, Generator
 from datetime import datetime, timedelta, timezone
 
@@ -107,3 +108,47 @@ def client(db_session: AsyncSession) -> Generator[TestClient, None, None]:
         yield test_client
 
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def client_isolated(tmp_path, monkeypatch: pytest.MonkeyPatch) -> Generator[TestClient, None, None]:
+    """TestClient with per-request DB sessions (production-like commit behavior)."""
+    from core import database as db_module
+
+    db_path = tmp_path / "isolated.db"
+    url = f"sqlite+aiosqlite:///{db_path}"
+    monkeypatch.setenv("DATABASE_URL", url)
+    monkeypatch.setenv("DATABASE_URL_SYNC", f"sqlite:///{db_path}")
+    clear_settings_cache()
+    db_module._engine = None
+    db_module._sessionmaker = None
+
+    async def _init_schema() -> None:
+        from models import (
+            account as _account,  # noqa: F401
+            auth_session as _auth_session,  # noqa: F401
+            category as _category,  # noqa: F401
+            transaction as _transaction,  # noqa: F401
+            user as _user,  # noqa: F401
+            workspace as _workspace,  # noqa: F401
+            workspace_invite as _workspace_invite,  # noqa: F401
+            workspace_membership as _workspace_membership,  # noqa: F401
+        )
+
+        engine = create_async_engine(url)
+        async with engine.begin() as connection:
+            await connection.run_sync(Base.metadata.create_all)
+        await engine.dispose()
+
+    asyncio.run(_init_schema())
+
+    app = create_app()
+    app.dependency_overrides[get_google_verifier] = lambda: FakeGoogleTokenVerifier()
+
+    with TestClient(app) as test_client:
+        yield test_client
+
+    app.dependency_overrides.clear()
+    db_module._engine = None
+    db_module._sessionmaker = None
+    clear_settings_cache()

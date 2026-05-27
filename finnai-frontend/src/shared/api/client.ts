@@ -1,7 +1,6 @@
 "use client";
 
-import { refreshAccessToken } from "@/features/auth";
-import { useAuthStore } from "@/features/auth/store/auth-store";
+import { fetchWithAuthRetry } from "@/shared/api/fetch-with-auth";
 
 export class ApiError extends Error {
   constructor(
@@ -24,26 +23,19 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
   const normalizedPath = path.startsWith("/") ? path.slice(1) : path;
   const url = `/api/proxy/${normalizedPath}`;
 
-  const buildHeaders = () => {
+  const init: RequestInit = { ...rest, headers };
+  if (!skipAuth) {
     const h = new Headers(headers);
-    if (!skipAuth) {
-      const token = useAuthStore.getState().accessToken;
-      if (token) h.set("Authorization", `Bearer ${token}`);
-    }
     if (!h.has("Content-Type") && rest.body) {
       h.set("Content-Type", "application/json");
     }
-    return h;
-  };
+    init.headers = h;
+  }
 
-  let response = await fetch(url, { ...rest, headers: buildHeaders() });
+  const response = await fetchWithAuthRetry(url, init, { skipAuth, skipRefresh });
 
-  if (response.status === 401 && !skipAuth && !skipRefresh) {
-    const newToken = await refreshAccessToken();
-    if (newToken) {
-      useAuthStore.getState().setAccessToken(newToken);
-      response = await fetch(url, { ...rest, headers: buildHeaders() });
-    }
+  if (response.status === 401 && !skipAuth) {
+    throw new ApiError("Sessão expirada", 401);
   }
 
   if (!response.ok) {

@@ -1,8 +1,7 @@
 "use client";
 
-import { refreshAccessToken } from "@/features/auth";
-import { useAuthStore } from "@/features/auth/store/auth-store";
 import { ApiError } from "@/shared/api/client";
+import { fetchWithAuthRetry } from "@/shared/api/fetch-with-auth";
 
 import type { ExportFormat } from "../../types";
 
@@ -33,28 +32,6 @@ function parseFilenameFromContentDisposition(value: string | null): string | nul
   return match?.[1] ?? null;
 }
 
-async function apiFetchBlob(path: string, init: RequestInit = {}): Promise<Response> {
-  const normalizedPath = path.startsWith("/") ? path.slice(1) : path;
-  const url = `/api/proxy/${normalizedPath}`;
-
-  const buildHeaders = () => {
-    const h = new Headers(init.headers);
-    const token = useAuthStore.getState().accessToken;
-    if (token) h.set("Authorization", `Bearer ${token}`);
-    return h;
-  };
-
-  let response = await fetch(url, { ...init, headers: buildHeaders() });
-  if (response.status === 401) {
-    const newToken = await refreshAccessToken();
-    if (newToken) {
-      useAuthStore.getState().setAccessToken(newToken);
-      response = await fetch(url, { ...init, headers: buildHeaders() });
-    }
-  }
-  return response;
-}
-
 export async function exportTransactions({
   format,
   ...params
@@ -69,10 +46,15 @@ export async function exportTransactions({
   if (params.amountMaxCents !== undefined) qp.set("amount_max_cents", String(params.amountMaxCents));
   if (params.search) qp.set("search", params.search);
 
-  const response = await apiFetchBlob(
-    `/workspaces/${encodeURIComponent(params.slug)}/reports/export/${format}?${qp.toString()}`,
-    { method: "GET" }
-  );
+  const path = `/workspaces/${encodeURIComponent(params.slug)}/reports/export/${format}?${qp.toString()}`;
+  const normalizedPath = path.startsWith("/") ? path.slice(1) : path;
+  const url = `/api/proxy/${normalizedPath}`;
+
+  const response = await fetchWithAuthRetry(url, { method: "GET" });
+
+  if (response.status === 401) {
+    throw new ApiError("Sessão expirada", 401);
+  }
 
   if (!response.ok) {
     const body = await response.json().catch(() => undefined);
@@ -90,4 +72,3 @@ export async function exportTransactions({
   const filename = filenameFromHeader ?? `transactions_export.${format}`;
   return { filename, blob };
 }
-
