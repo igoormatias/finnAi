@@ -33,20 +33,16 @@ function createWrapper(queryClient: QueryClient) {
 }
 
 describe("useCreateTransaction", () => {
-  it("adds the created transaction to the first page and invalidates dependent workspace queries", async () => {
+  it("seeds cache when prev is undefined and invalidates dependent workspace queries", async () => {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     const slug = "familia-silva";
     const filterKey = "limit=20&offset=0&sort=newest";
     const transactionsKey = queryKeys.finance.transactions(slug, filterKey);
     const overviewKey = queryKeys.dashboard.overview(slug);
+    const accountsKey = queryKeys.finance.accounts(slug);
 
-    queryClient.setQueryData<PaginatedResponse<Transaction>>(transactionsKey, {
-      total: 0,
-      items: [],
-      limit: 20,
-      offset: 0,
-    });
     queryClient.setQueryData(overviewKey, { total_balance_cents: 0 });
+    queryClient.setQueryData(accountsKey, []);
 
     const created: Transaction = {
       id: "tx-1",
@@ -83,11 +79,66 @@ describe("useCreateTransaction", () => {
 
     await result.current.mutateAsync(input);
 
+    const cached = queryClient.getQueryData<PaginatedResponse<Transaction>>(transactionsKey);
+    expect(cached?.items[0]).toMatchObject({ id: "tx-1", description: "Café" });
+    expect(cached?.total).toBe(1);
+
     await waitFor(() => {
-      const cached = queryClient.getQueryData<PaginatedResponse<Transaction>>(transactionsKey);
-      expect(cached?.items[0]).toMatchObject({ id: "tx-1", description: "Café" });
       expect(queryClient.getQueryState(overviewKey)?.isInvalidated).toBe(true);
+      expect(queryClient.getQueryState(accountsKey)?.isInvalidated).toBe(true);
     });
   });
-});
 
+  it("does not seed expense-only cache when creating income", async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const slug = "familia-silva";
+    const expenseKey = queryKeys.finance.transactions(
+      slug,
+      "limit=20&offset=0&sort=newest&type=expense"
+    );
+
+    queryClient.setQueryData<PaginatedResponse<Transaction>>(expenseKey, {
+      total: 0,
+      items: [],
+      limit: 20,
+      offset: 0,
+    });
+
+    const created: Transaction = {
+      id: "tx-income",
+      workspace_id: "workspace-1",
+      account_id: "account-1",
+      category_id: "category-1",
+      created_by: "user-1",
+      type: "income",
+      amount_cents: 5000,
+      description: "Salário",
+      notes: null,
+      transaction_date: "2026-05-27T12:00:00.000Z",
+      is_recurring: false,
+      recurrence_rule: null,
+      created_at: "2026-05-27T12:00:01.000Z",
+      updated_at: "2026-05-27T12:00:01.000Z",
+    };
+    createTransactionMock.mockResolvedValueOnce(created);
+
+    const { result } = renderHook(() => useCreateTransaction(), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    await result.current.mutateAsync({
+      account_id: "account-1",
+      category_id: "category-1",
+      type: "income",
+      amount_cents: 5000,
+      description: "Salário",
+      transaction_date: "2026-05-27T12:00:00.000Z",
+      is_recurring: false,
+      recurrence_rule: null,
+    });
+
+    const expenseCache = queryClient.getQueryData<PaginatedResponse<Transaction>>(expenseKey);
+    expect(expenseCache?.total).toBe(0);
+    expect(expenseCache?.items).toHaveLength(0);
+  });
+});

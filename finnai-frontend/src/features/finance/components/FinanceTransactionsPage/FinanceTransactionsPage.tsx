@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui";
 import { ErrorState } from "@/components/states";
@@ -42,7 +43,7 @@ export const FinanceTransactionsPage = () => {
   const categoriesQuery = useCategories();
   const accountsQuery = useAccounts();
 
-  const { data, isLoading, isError } = useTransactions(filters);
+  const { data, isLoading, isFetching, isError } = useTransactions(filters);
   const createMutation = useCreateTransaction();
   const updateMutation = useUpdateTransaction();
   const deleteMutation = useDeleteTransaction();
@@ -73,7 +74,6 @@ export const FinanceTransactionsPage = () => {
   };
 
   const onDelete = (tx: Transaction) => {
-    if (tx.id.startsWith("optimistic_")) return;
     void deleteMutation.mutateAsync(tx.id);
   };
 
@@ -116,7 +116,12 @@ export const FinanceTransactionsPage = () => {
         <ErrorState title="Não foi possível carregar categorias/contas" />
       )}
 
-      <TransactionsSummary items={items} isLoading={isLoading} />
+      <TransactionsSummary
+        items={items}
+        total={data?.total}
+        isLoading={isLoading}
+        isFetching={isFetching}
+      />
 
       <div className="space-y-4">
         <TransactionsFilters
@@ -160,8 +165,19 @@ export const FinanceTransactionsPage = () => {
         categories={categories}
         accounts={accounts}
         onCreate={async (input) => {
-          await createMutation.mutateAsync(input);
-          setFilters((prev) => ({ ...prev, offset: 0, sort: "newest" }));
+          const created = await createMutation.mutateAsync(input);
+          setFilters((prev) => {
+            const next = { ...prev, offset: 0, sort: "newest" as const };
+            if (prev.type && prev.type !== created.type) {
+              toast.info(
+                created.type === "income"
+                  ? "Receita criada. Troque para a aba Receitas para vê-la na listagem filtrada."
+                  : "Despesa criada. Troque para a aba Despesas para vê-la na listagem filtrada."
+              );
+              return next;
+            }
+            return next;
+          });
           setFormOpen(false);
         }}
         onUpdate={async (id, input) => {

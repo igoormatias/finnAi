@@ -13,14 +13,20 @@ function sum(items: Transaction[], type: "income" | "expense") {
 
 export const TransactionsSummary = ({
   items,
+  total,
   isLoading,
+  isFetching,
 }: {
   items: Transaction[] | undefined;
+  total?: number;
   isLoading: boolean;
+  isFetching?: boolean;
 }) => {
+  const showSkeleton = isLoading || (isFetching && items === undefined);
   const incomes = items ? sum(items, "income") : 0;
   const expenses = items ? sum(items, "expense") : 0;
   const net = incomes - expenses;
+  const hasMoreThanPage = total !== undefined && total > (items?.length ?? 0);
 
   return (
     <div className="grid gap-4 md:grid-cols-4">
@@ -34,7 +40,7 @@ export const TransactionsSummary = ({
           </div>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {showSkeleton ? (
             <Skeleton className="h-7 w-28" />
           ) : (
             <div className="text-2xl font-bold text-success">{formatCentsBRL(incomes)}</div>
@@ -52,7 +58,7 @@ export const TransactionsSummary = ({
           </div>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {showSkeleton ? (
             <Skeleton className="h-7 w-28" />
           ) : (
             <div className="text-2xl font-bold text-danger">{formatCentsBRL(expenses)}</div>
@@ -70,7 +76,7 @@ export const TransactionsSummary = ({
           </div>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {showSkeleton ? (
             <Skeleton className="h-7 w-28" />
           ) : (
             <div className="text-2xl font-bold text-foreground">{formatCentsBRL(net)}</div>
@@ -85,9 +91,15 @@ export const TransactionsSummary = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-foreground">
-            Adicione receitas e despesas para manter seu controle diário.
-          </div>
+          {showSkeleton ? (
+            <Skeleton className="h-4 w-full" />
+          ) : (
+            <div className="text-sm text-foreground">
+              {hasMoreThanPage
+                ? `Totais da página atual (${items?.length ?? 0} de ${total} transações).`
+                : "Adicione receitas e despesas para manter seu controle diário."}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
