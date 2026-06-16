@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ssl
 from collections.abc import AsyncGenerator
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
@@ -16,6 +17,14 @@ _engine: AsyncEngine | None = None
 _sessionmaker: async_sessionmaker[AsyncSession] | None = None
 
 
+def _asyncpg_ssl_context() -> ssl.SSLContext:
+    """Managed Postgres (Render, etc.) often uses certs that fail default verification."""
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    return ctx
+
+
 def _async_database_url_and_connect_args(
     database_url: str,
     *,
@@ -28,10 +37,12 @@ def _async_database_url_and_connect_args(
 
     sslmode = query.pop("sslmode", None)
     ssl_query = query.pop("ssl", None)
-    if sslmode == "require" or ssl_query in ("require", "true", "1"):
-        connect_args["ssl"] = True
-    elif app_env == AppEnvironment.production:
-        connect_args["ssl"] = True
+    if (
+        sslmode == "require"
+        or ssl_query in ("require", "true", "1")
+        or app_env == AppEnvironment.production
+    ):
+        connect_args["ssl"] = _asyncpg_ssl_context()
 
     cleaned_url = urlunparse(parsed._replace(query=urlencode(query)))
     return cleaned_url, connect_args
