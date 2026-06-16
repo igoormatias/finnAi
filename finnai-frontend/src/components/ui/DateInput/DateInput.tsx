@@ -14,7 +14,7 @@ type DateInputProps = React.ComponentProps<typeof Input> & {
 export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
   ({ className, showIcon = false, ...props }, ref) => {
     return (
-      <div className="relative min-w-0 w-full">
+      <div className="relative w-full min-w-0 max-w-full">
         {showIcon ? (
           <Calendar
             className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
@@ -24,12 +24,7 @@ export const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
         <Input
           ref={ref}
           type="date"
-          data-slot="date-input"
-          className={cn(
-            "date-input min-h-11 w-full min-w-0 max-w-full pr-10 scheme-light dark:scheme-dark",
-            showIcon && "pl-9",
-            className
-          )}
+          className={cn(showIcon && "pl-9", className)}
           {...props}
         />
       </div>

@@ -141,7 +141,7 @@ export const TransactionFormSheet = ({
         </SheetHeader>
 
         <form
-          className="space-y-3"
+          className="min-w-0 w-full space-y-3"
           onSubmit={form.handleSubmit(async (values) => {
             setSubmitting(true);
             try {
@@ -170,7 +170,7 @@ export const TransactionFormSheet = ({
             }
           })}
         >
-          <Card className="space-y-3 border-border bg-elevated/10 p-3">
+          <Card className="min-w-0 w-full space-y-3 border-border bg-elevated/10 p-3">
             <div className="grid gap-2">
               <label className="text-xs font-medium text-muted">Tipo</label>
               <div className="inline-flex rounded-xl border border-border bg-elevated/40 p-1">

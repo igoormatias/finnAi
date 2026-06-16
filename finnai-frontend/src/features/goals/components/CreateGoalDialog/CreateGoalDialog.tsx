@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui";
 import { CurrencyInput } from "@/components/ui";
+import { DateInput } from "@/components/ui";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui";
 import { Input } from "@/components/ui";
 import {
@@ -126,10 +127,8 @@ function CreateGoalForm({
         <label className="text-xs font-medium text-muted" htmlFor="goal-date">
           Data alvo
         </label>
-        <Input
+        <DateInput
           id="goal-date"
-          type="date"
-          className="scheme-light dark:scheme-dark"
           value={targetDate}
           onChange={(e) => setTargetDate(e.target.value)}
         />

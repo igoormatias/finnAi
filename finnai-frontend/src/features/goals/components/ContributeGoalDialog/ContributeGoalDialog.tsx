@@ -4,8 +4,8 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui";
 import { CurrencyInput } from "@/components/ui";
+import { DateInput } from "@/components/ui";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui";
-import { Input } from "@/components/ui";
 import { parseCurrencyBRL } from "@/lib/formatters/money";
 
 import type { Goal, GoalContributionInput } from "../../types";
@@ -60,10 +60,8 @@ function ContributeGoalForm({
         <label className="text-xs font-medium text-muted" htmlFor="contribution-date">
           Data
         </label>
-        <Input
+        <DateInput
           id="contribution-date"
-          type="date"
-          className="scheme-light dark:scheme-dark"
           value={contributedAt}
           onChange={(e) => setContributedAt(e.target.value)}
           disabled={isSubmitting}

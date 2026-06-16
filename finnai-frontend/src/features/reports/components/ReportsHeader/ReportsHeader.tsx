@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Download } from "lucide-react";
 
-import { Button, Input } from "@/components/ui";
+import { Button, DateInput } from "@/components/ui";
 import type { DateRangePreset } from "@/features/dashboard/types";
 import { resolveDateRange } from "@/features/dashboard";
 import { cn } from "@/lib/utils";
@@ -111,16 +111,14 @@ export const ReportsHeader = ({ range, onRangeChange, onExportClick }: ReportsHe
         <div className="grid gap-2 sm:col-span-2 sm:w-full sm:grid-cols-2">
           <label className="grid gap-2 text-sm">
             <span className="text-muted">Início</span>
-            <Input
-              type="date"
+            <DateInput
               value={toDateInputValue(customStart)}
               onChange={(e) => setCustomStart(startOfDay(new Date(e.target.value)))}
             />
           </label>
           <label className="grid gap-2 text-sm">
             <span className="text-muted">Fim</span>
-            <Input
-              type="date"
+            <DateInput
               value={toDateInputValue(customEnd)}
               onChange={(e) => setCustomEnd(endOfDay(new Date(e.target.value)))}
             />

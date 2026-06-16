@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Download, FileSpreadsheet, FileText } from "lucide-react";
 import { toast } from "sonner";
 
-import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from "@/components/ui";
+import { Button, DateInput, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Input } from "@/components/ui";
 import type { ExportFormat } from "../../types";
 import { exportTransactions } from "../../services/reports-service";
 import { downloadBlob } from "../../utils/download-blob";
@@ -158,9 +158,8 @@ export const ExportDialog = ({
               <label className="text-sm font-medium text-foreground" htmlFor="export-start">
                 Início
               </label>
-              <Input
+              <DateInput
                 id="export-start"
-                type="date"
                 value={toDateInputValue(startDate)}
                 onChange={(e) => setStartDate(startOfDay(new Date(e.target.value)))}
               />
@@ -169,9 +168,8 @@ export const ExportDialog = ({
               <label className="text-sm font-medium text-foreground" htmlFor="export-end">
                 Fim
               </label>
-              <Input
+              <DateInput
                 id="export-end"
-                type="date"
                 value={toDateInputValue(endDate)}
                 onChange={(e) => setEndDate(endOfDay(new Date(e.target.value)))}
               />
