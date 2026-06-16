@@ -312,6 +312,38 @@ Principais:
 - `DATABASE_URL`: URL async (`postgresql+asyncpg://...`)
 - `DATABASE_URL_SYNC`: URL sync (migrations) (`postgresql+psycopg://...`)
 
+### Render (PostgreSQL)
+
+No Web Service, defina **Root Directory** `finnai-backend` e use a **Internal Database URL** do Postgres:
+
+| Campo | Valor |
+|-------|--------|
+| **Build Command** | `pip install -r requirements/base.txt` |
+| **Start Command** | `bash scripts/render_start.sh` |
+
+| Variável | Exemplo |
+|----------|---------|
+| `APP_ENV` | `production` |
+| `DATABASE_URL` | `postgresql+asyncpg://USER:PASS@dpg-xxxx-a:5432/finn_ai_db` |
+| `DATABASE_URL_SYNC` | `postgresql+psycopg://USER:PASS@dpg-xxxx-a:5432/finn_ai_db?sslmode=require` |
+
+**Como configurar sem erro de hostname:**
+
+1. Abra o serviço **PostgreSQL** no Render → aba **Connections**.
+2. Clique em **copiar** na **Internal Database URL** (não digite o hostname na mão).
+3. Cole em `DATABASE_URL_SYNC` e troque o início para `postgresql+psycopg://`.
+4. Duplique para `DATABASE_URL` com `postgresql+asyncpg://` (mesmo host, user, senha e database).
+5. API e Postgres devem estar na **mesma região** (ex.: Oregon).
+
+Se o log mostrar `failed to resolve host "dpg-..."`, o hostname está **errado ou desatualizado** (typo comum: `alusk8` vs `a1usk8`). Copie de novo do painel do Postgres.
+
+Alternativa: defina só `DATABASE_URL` com a Internal URL (`postgresql://...`); o `render_start.sh` deriva a URL sync automaticamente.
+
+- Em `DATABASE_URL_SYNC`, use `?sslmode=require` (Alembic/psycopg).
+- Em produção, a API habilita SSL no asyncpg automaticamente; não use `sslmode` na `DATABASE_URL` (asyncpg não aceita esse parâmetro na URL).
+- Se a senha tiver `@`, `#`, etc., faça [URL encode](https://developer.mozilla.org/en-US/docs/Glossary/Percent-encoding) na senha.
+- Remova variáveis com host `db` (são do Docker local).
+
 ## Setup local (sem Docker)
 
 ```bash
