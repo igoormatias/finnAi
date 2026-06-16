@@ -9,6 +9,8 @@ from openpyxl.styles import Font
 
 from models.transaction import Transaction
 
+ExportRow = Transaction | dict
+
 
 @dataclass(frozen=True)
 class ExportFile:
@@ -17,33 +19,44 @@ class ExportFile:
     content: bytes
 
 
+def _row_value(row: ExportRow, key: str, attr: str | None = None) -> object:
+    if isinstance(row, dict):
+        return row.get(key, "")
+    return getattr(row, attr or key, "")
+
+
 class ExportService:
-    def export_csv(self, *, rows: list[Transaction], filename_prefix: str) -> ExportFile:
+    def export_csv(self, *, rows: list[ExportRow], filename_prefix: str) -> ExportFile:
         output = io.StringIO()
         writer = csv.writer(output)
-        writer.writerow(
-            [
-                "transaction_date",
-                "type",
-                "amount_cents",
-                "description",
-                "notes",
-                "account_name",
-                "category_name",
-            ]
-        )
+        has_projected = any(isinstance(r, dict) and "is_projected" in r for r in rows)
+        headers = [
+            "transaction_date",
+            "type",
+            "amount_cents",
+            "description",
+            "notes",
+            "account_name",
+            "category_name",
+        ]
+        if has_projected:
+            headers.append("is_projected")
+        writer.writerow(headers)
         for tx in rows:
-            writer.writerow(
-                [
-                    tx.transaction_date.isoformat(),
-                    tx.type,
-                    int(tx.amount_cents),
-                    tx.description,
-                    tx.notes or "",
-                    getattr(tx.account, "name", ""),
-                    getattr(tx.category, "name", ""),
-                ]
-            )
+            date_val = _row_value(tx, "transaction_date")
+            date_str = date_val.isoformat() if hasattr(date_val, "isoformat") else str(date_val)
+            row_data = [
+                date_str,
+                _row_value(tx, "type"),
+                int(_row_value(tx, "amount_cents")),
+                _row_value(tx, "description"),
+                _row_value(tx, "notes") or "",
+                _row_value(tx, "account_name"),
+                _row_value(tx, "category_name"),
+            ]
+            if has_projected:
+                row_data.append(_row_value(tx, "is_projected") if isinstance(tx, dict) else False)
+            writer.writerow(row_data)
 
         # UTF-8 with BOM for Excel
         content = output.getvalue().encode("utf-8-sig")
@@ -53,11 +66,12 @@ class ExportService:
             content=content,
         )
 
-    def export_xlsx(self, *, rows: list[Transaction], filename_prefix: str) -> ExportFile:
+    def export_xlsx(self, *, rows: list[ExportRow], filename_prefix: str) -> ExportFile:
         wb = Workbook()
         ws = wb.active
         ws.title = "Transactions"
 
+        has_projected = any(isinstance(r, dict) and "is_projected" in r for r in rows)
         headers = [
             "Transaction Date",
             "Type",
@@ -67,6 +81,8 @@ class ExportService:
             "Account",
             "Category",
         ]
+        if has_projected:
+            headers.append("Is Projected")
         ws.append(headers)
         for cell in ws[1]:
             cell.font = Font(bold=True)
@@ -75,23 +91,27 @@ class ExportService:
         total_expense = 0
 
         for tx in rows:
-            amount = int(tx.amount_cents)
-            if tx.type == "income":
+            amount = int(_row_value(tx, "amount_cents"))
+            tx_type = str(_row_value(tx, "type"))
+            if tx_type == "income":
                 total_income += amount
-            elif tx.type == "expense":
+            elif tx_type == "expense":
                 total_expense += amount
 
-            ws.append(
-                [
-                    tx.transaction_date.isoformat(),
-                    tx.type,
-                    amount,
-                    tx.description,
-                    tx.notes or "",
-                    getattr(tx.account, "name", ""),
-                    getattr(tx.category, "name", ""),
-                ]
-            )
+            date_val = _row_value(tx, "transaction_date")
+            date_str = date_val.isoformat() if hasattr(date_val, "isoformat") else str(date_val)
+            row_data = [
+                date_str,
+                tx_type,
+                amount,
+                _row_value(tx, "description"),
+                _row_value(tx, "notes") or "",
+                _row_value(tx, "account_name"),
+                _row_value(tx, "category_name"),
+            ]
+            if has_projected:
+                row_data.append(_row_value(tx, "is_projected") if isinstance(tx, dict) else False)
+            ws.append(row_data)
 
         ws.append([])
         ws.append(["Totals", "", "", "", "", "", ""])

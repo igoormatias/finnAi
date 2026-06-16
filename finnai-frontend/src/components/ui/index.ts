@@ -6,6 +6,7 @@ export * from "./CurrencyInput";
 export * from "./Dialog";
 export * from "./DropdownMenu";
 export * from "./Input";
+export * from "./PeriodFilter";
 export * from "./Sheet";
 export * from "./Select";
 export * from "./Skeleton";

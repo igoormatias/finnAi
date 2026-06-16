@@ -79,6 +79,8 @@ def test_dashboard_overview_cashflow_categories_trends_accounts(client: TestClie
     assert o["total_balance_cents"] == 1300
     assert o["monthly_income_cents"] == 500
     assert o["monthly_expense_cents"] == 200
+    assert o["savings_cents"] == 300
+    assert o["savings_rate"] == 0.6
     assert o["transaction_count"] == 2
     assert o["biggest_income"]["amount_cents"] == 500
     assert o["biggest_expense"]["amount_cents"] == 200

@@ -15,6 +15,7 @@ export type ExportDialogProps = {
   slug: string;
   defaultStartDate: Date;
   defaultEndDate: Date;
+  defaultMode?: import("@/features/dashboard/types").ReportMode;
 };
 
 type ExportState = "idle" | "loading" | "success" | "error";
@@ -45,6 +46,7 @@ export const ExportDialog = ({
   slug,
   defaultStartDate,
   defaultEndDate,
+  defaultMode = "historical",
 }: ExportDialogProps) => {
   const [format, setFormat] = useState<ExportFormat>("csv");
   const [state, setState] = useState<ExportState>("idle");
@@ -64,6 +66,7 @@ export const ExportDialog = ({
         format,
         startDate,
         endDate,
+        mode: defaultMode,
         type: type === "all" ? undefined : type,
         search: search.trim().length > 0 ? search.trim() : undefined,
       });

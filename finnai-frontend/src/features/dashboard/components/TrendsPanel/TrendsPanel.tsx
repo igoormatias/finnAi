@@ -45,8 +45,8 @@ function TrendRow({
   );
 }
 
-export const TrendsPanel = () => {
-  const { data, isLoading, isError } = useTrendAnalytics();
+export const TrendsPanel = ({ period }: { period?: string }) => {
+  const { data, isLoading, isError } = useTrendAnalytics(period);
 
   return (
     <Card>

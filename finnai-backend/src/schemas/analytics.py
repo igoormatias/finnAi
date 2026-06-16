@@ -82,3 +82,41 @@ class ExportQuery(BaseModel):
     amount_min_cents: int | None = Field(default=None, ge=0)
     amount_max_cents: int | None = Field(default=None, ge=0)
     search: str | None = Field(default=None, min_length=1, max_length=200)
+
+
+class EmergencyReserveResponse(BaseModel):
+    reserved_cents: int
+    avg_monthly_expense_cents: int
+    target_cents: int
+    target_months: int
+    coverage_months: float
+    has_emergency_goal: bool
+    goal_id: uuid.UUID | None = None
+
+
+class MonthlyExpensePointResponse(BaseModel):
+    month: str
+    expense_cents: int
+    income_cents: int
+    vs_previous_percent: float | None = None
+
+
+class MonthlyExpensesResponse(BaseModel):
+    items: list[MonthlyExpensePointResponse]
+
+
+class ProjectedCashflowPointResponse(BaseModel):
+    bucket_start: datetime
+    income_cents: int
+    expense_cents: int
+    cumulative_balance_cents: int
+    is_projected: bool
+
+
+class ProjectedCashflowResponse(BaseModel):
+    granularity: GranularityLiteral
+    points: list[ProjectedCashflowPointResponse]
+    projected_income_cents: int
+    projected_expense_cents: int
+    projected_balance_delta_cents: int
+

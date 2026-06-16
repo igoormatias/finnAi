@@ -35,6 +35,11 @@ vi.mock("../../hooks/use-ai-score-state", () => ({
 
 vi.mock("@/features/workspaces", () => ({
   useWorkspaceSlug: () => "familia",
+  useFinancialPreferences: () => ({
+    data: {
+      include_recurrences_in_projections: true,
+    },
+  }),
 }));
 
 vi.mock("framer-motion", async () => {

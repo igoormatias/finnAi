@@ -11,7 +11,7 @@ class PromptBuildResult:
 
 
 def build_financial_score_prompt(*, input_payload: dict) -> PromptBuildResult:
-    prompt_version = "v2_ptbr"
+    prompt_version = "v3_ptbr_projections"
     schema = {
         "score": 0,
         "label": "string",
@@ -42,6 +42,9 @@ def build_financial_score_prompt(*, input_payload: dict) -> PromptBuildResult:
         "- score deve ser um inteiro de 0 a 100\n"
         "- listas com no máximo 10 itens\n"
         "- seja conciso e acionável\n"
+        "- use emergency_reserve, projected_30d e recurring_income_share quando disponíveis\n"
+        "- gere insights como: tendência de saldo, meses de reserva, risco de déficit futuro, "
+        "% da renda comprometida por despesas recorrentes\n"
         "Exemplo de resposta (apenas para referência de idioma e formato):\n"
         f"{json.dumps(example, ensure_ascii=False)}\n"
     )

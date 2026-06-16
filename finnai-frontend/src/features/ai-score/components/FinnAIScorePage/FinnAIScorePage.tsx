@@ -1,8 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { AlertCircle } from "lucide-react";
 
+import { useFinancialPreferences } from "@/features/workspaces";
+import { PeriodFilter } from "@/components/ui";
+import { Badge } from "@/components/ui";
 import { useAIScoreState } from "../../hooks/use-ai-score-state";
 import { AIInsightsPanel } from "../AIInsightsPanel";
 import { AIRecommendations } from "../AIRecommendations";
@@ -16,9 +20,12 @@ import { ScoreHistoryChart } from "../ScoreHistoryChart";
 import { ErrorState } from "@/components/states";
 import { Button } from "@/components/ui";
 import { fadeUp } from "@/lib/motion/variants";
+import type { DateRangePreset } from "@/features/dashboard/types";
 
 export const FinnAIScorePage = () => {
   const reduceMotion = useReducedMotion();
+  const [period, setPeriod] = useState<DateRangePreset>("this_month");
+  const { data: prefs } = useFinancialPreferences();
   const {
     status,
     score,
@@ -157,7 +164,13 @@ export const FinnAIScorePage = () => {
               timeStyle: "short",
             })}
           </p>
+          {prefs?.include_recurrences_in_projections && (
+            <Badge variant="default" className="mt-2">
+              Inclui projeções
+            </Badge>
+          )}
         </div>
+        <PeriodFilter range={period} onRangeChange={setPeriod} ariaLabel="Período do score" />
         <RegenerateScoreDialog
           onConfirm={requestRegenerate}
           disabled={!canRegenerate}

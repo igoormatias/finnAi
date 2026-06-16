@@ -9,6 +9,7 @@ from api.routers.categories import router as categories_router
 from api.routers.goals import router as goals_router
 from api.routers.dashboard import router as dashboard_router
 from api.routers.dashboard_v5 import router as dashboard_v5_router
+from api.routers.financial_preferences import router as financial_preferences_router
 from api.routers.health import router as health_router
 from api.routers.invites import router as invites_router
 from api.routers.reports import router as reports_router
@@ -30,5 +31,6 @@ api_router.include_router(accounts_router)
 api_router.include_router(transactions_router)
 api_router.include_router(dashboard_router)
 api_router.include_router(dashboard_v5_router)
+api_router.include_router(financial_preferences_router)
 api_router.include_router(reports_router)
 api_router.include_router(ai_score_router)

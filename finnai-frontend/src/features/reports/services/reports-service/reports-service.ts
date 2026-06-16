@@ -4,11 +4,13 @@ import { ApiError } from "@/shared/api/client";
 import { fetchWithAuthRetry } from "@/shared/api/fetch-with-auth";
 
 import type { ExportFormat } from "../../types";
+import type { ReportMode } from "@/features/dashboard/types";
 
 export type ExportParams = {
   slug: string;
   startDate: Date;
   endDate: Date;
+  mode?: ReportMode;
   type?: "income" | "expense";
   categoryId?: string;
   accountId?: string;
@@ -45,6 +47,7 @@ export async function exportTransactions({
   if (params.amountMinCents !== undefined) qp.set("amount_min_cents", String(params.amountMinCents));
   if (params.amountMaxCents !== undefined) qp.set("amount_max_cents", String(params.amountMaxCents));
   if (params.search) qp.set("search", params.search);
+  if (params.mode) qp.set("mode", params.mode);
 
   const path = `/workspaces/${encodeURIComponent(params.slug)}/reports/export/${format}?${qp.toString()}`;
   const normalizedPath = path.startsWith("/") ? path.slice(1) : path;

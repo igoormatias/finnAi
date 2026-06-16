@@ -76,7 +76,58 @@ export type FinnAIScorePreview = {
   summary: string;
 };
 
-export type DateRangePreset = "7d" | "30d" | "1y";
+export type DateRangePreset =
+  | "7d"
+  | "30d"
+  | "1y"
+  | "last_30_days"
+  | "last_90_days"
+  | "this_month"
+  | "next_30_days"
+  | "next_90_days"
+  | "this_year";
+
+export type ReportMode = "historical" | "projected" | "complete";
+
+export type EmergencyReserve = {
+  reserved_cents: number;
+  avg_monthly_expense_cents: number;
+  target_cents: number;
+  target_months: number;
+  coverage_months: number;
+  has_emergency_goal: boolean;
+  goal_id: string | null;
+};
+
+export type MonthlyExpensePoint = {
+  month: string;
+  expense_cents: number;
+  income_cents: number;
+  vs_previous_percent: number | null;
+};
+
+export type ProjectedCashflowPoint = CashflowPoint & {
+  is_projected: boolean;
+};
+
+export type ProjectedCashflowResponse = {
+  granularity: CashflowResponse["granularity"];
+  points: ProjectedCashflowPoint[];
+  projected_income_cents: number;
+  projected_expense_cents: number;
+  projected_balance_delta_cents: number;
+};
+
+export type FinancialPreferences = {
+  emergency_reserve_target_months: number;
+  include_future_transactions: boolean;
+  include_past_transactions: boolean;
+  include_goals_in_projections: boolean;
+  include_recurrences_in_projections: boolean;
+  default_dashboard_period: DateRangePreset;
+  default_reports_period: DateRangePreset;
+  default_reports_mode: ReportMode;
+};
 
 export type DateRange = {
   preset: DateRangePreset;

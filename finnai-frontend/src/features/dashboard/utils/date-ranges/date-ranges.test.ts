@@ -17,9 +17,13 @@ describe("resolveDateRange", () => {
     expect(range.preset).toBe("30d");
   });
 
-  it("returns monthly granularity for 1y", () => {
-    const range = resolveDateRange("1y");
-    expect(range.granularity).toBe("monthly");
-    expect(range.preset).toBe("1y");
+  it("returns daily granularity for last_30_days", () => {
+    const range = resolveDateRange("last_30_days");
+    expect(range.granularity).toBe("daily");
+  });
+
+  it("returns weekly granularity for next_90_days", () => {
+    const range = resolveDateRange("next_90_days");
+    expect(range.granularity).toBe("weekly");
   });
 });

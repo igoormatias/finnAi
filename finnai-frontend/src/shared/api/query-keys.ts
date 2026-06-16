@@ -9,18 +9,23 @@ export const queryKeys = {
     detail: (slug: string) => ["workspaces", slug, "detail"] as const,
     members: (slug: string) => ["workspaces", slug, "members"] as const,
     invites: (slug: string) => ["workspaces", slug, "invites"] as const,
+    financialPreferences: (slug: string) => ["workspaces", slug, "financial-preferences"] as const,
   },
   dashboard: {
     all: (slug: string) => ["dashboard", slug] as const,
-    overview: (slug: string) => ["dashboard", slug, "overview"] as const,
-    cashflow: (slug: string, preset: DateRangePreset) =>
-      ["dashboard", slug, "cashflow", preset] as const,
+    overview: (slug: string, preset?: string) =>
+      ["dashboard", slug, "overview", preset ?? "default"] as const,
+    cashflow: (slug: string, preset: DateRangePreset, mode?: string) =>
+      ["dashboard", slug, "cashflow", preset, mode ?? "historical"] as const,
     categories: (slug: string, preset: DateRangePreset) =>
       ["dashboard", slug, "categories", preset] as const,
-    trends: (slug: string) => ["dashboard", slug, "trends"] as const,
+    trends: (slug: string, preset?: string) =>
+      ["dashboard", slug, "trends", preset ?? "default"] as const,
     accounts: (slug: string) => ["dashboard", slug, "accounts"] as const,
     transactions: (slug: string) => ["dashboard", slug, "transactions"] as const,
     score: (slug: string) => ["dashboard", slug, "score"] as const,
+    emergencyReserve: (slug: string) => ["dashboard", slug, "emergency-reserve"] as const,
+    monthlyExpenses: (slug: string) => ["dashboard", slug, "monthly-expenses"] as const,
   },
   finance: {
     categories: (slug: string) => ["finance", slug, "categories"] as const,

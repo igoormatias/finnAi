@@ -14,6 +14,7 @@ from models.workspace_goal_contribution import WorkspaceGoalContribution
 from repositories.goal_contribution_repository import GoalContributionRepository
 from repositories.goal_repository import GoalRepository
 from schemas.goals import GoalsOverviewResponse
+from services.ai_stale_helper import mark_ai_score_stale
 
 
 @dataclass(frozen=True)
@@ -80,6 +81,7 @@ class GoalService:
         if completed_at:
             goal = await self._goals.update(goal, completed_at=completed_at)
         await self._session.commit()
+        await mark_ai_score_stale(self._session, workspace.id)
         return goal
 
     async def update_goal(
@@ -125,6 +127,7 @@ class GoalService:
             clear_completed_at=clear_completed,
         )
         await self._session.commit()
+        await mark_ai_score_stale(self._session, workspace.id)
         return updated
 
     async def add_contribution(
@@ -172,6 +175,7 @@ class GoalService:
         goal = await self._get_goal(workspace, goal_id)
         await self._goals.delete(goal)
         await self._session.commit()
+        await mark_ai_score_stale(self._session, workspace.id)
 
     async def _get_goal(self, workspace: Workspace, goal_id: uuid.UUID) -> WorkspaceGoal:
         goal = await self._goals.get_by_id(goal_id)

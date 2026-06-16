@@ -11,6 +11,7 @@ from domain.workspace_roles import WorkspaceRole
 from models.user import User
 from models.workspace import Workspace
 from repositories.category_repository import CategoryRepository
+from repositories.financial_preferences_repository import FinancialPreferencesRepository
 from repositories.membership_repository import MembershipRepository
 from repositories.workspace_repository import WorkspaceRepository
 from services.default_categories import DEFAULT_CATEGORIES
@@ -22,6 +23,7 @@ class WorkspaceService:
         self._workspaces = WorkspaceRepository(session)
         self._memberships = MembershipRepository(session)
         self._categories = CategoryRepository(session)
+        self._financial_prefs = FinancialPreferencesRepository(session)
 
     async def create_workspace(self, user: User, name: str) -> Workspace:
         slug = await self._generate_unique_slug(name)
@@ -47,6 +49,7 @@ class WorkspaceService:
             except IntegrityError:
                 # Duplicate category (e.g. retry or concurrency) – ignore.
                 continue
+        await self._financial_prefs.create_defaults(workspace.id)
         await self._session.commit()
         await self._session.refresh(workspace)
         return workspace

@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { ConfirmationDialog } from "@/components/ui";
 import { Input } from "@/components/ui";
 import { Skeleton } from "@/components/ui";
-import { PrivacyToggle, roleLabel } from "@/features/workspaces";
+import { PrivacyToggle, roleLabel, FinancialPreferencesSection } from "@/features/workspaces";
 import {
   useDeleteWorkspace,
   useLeaveWorkspace,
@@ -154,6 +154,8 @@ export const WorkspaceSettingsPage = () => {
           </form>
         </CardContent>
       </Card>
+
+      <FinancialPreferencesSection />
 
       <Card>
         <CardHeader>

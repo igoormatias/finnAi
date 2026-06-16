@@ -17,8 +17,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { Skeleton } from "@/components/ui";
 import { ChartEmpty } from "@/features/dashboard";
 import { ChartError } from "@/features/dashboard";
-import { useCashflow } from "@/features/dashboard";
-import type { DateRangePreset } from "@/features/dashboard/types";
+import { useCashflow, useProjectedCashflow } from "@/features/dashboard";
+import type { DateRangePreset, ReportMode } from "@/features/dashboard/types";
 import { CHART_COLORS, chartTooltipStyle } from "../../utils/chart-theme";
 import { formatBucketLabel } from "@/lib/formatters/date";
 import { formatCurrencyBRL } from "@/lib/formatters/money";
@@ -26,6 +26,7 @@ import { queryKeys } from "@/shared/api/query-keys";
 
 type CashflowChartProps = {
   range: DateRangePreset;
+  mode?: ReportMode;
 };
 
 function CashflowTooltip({
@@ -50,8 +51,14 @@ function CashflowTooltip({
   );
 }
 
-export const CashflowChart = memo(function CashflowChart({ range }: CashflowChartProps) {
-  const { data, isLoading, isError } = useCashflow(range);
+export const CashflowChart = memo(function CashflowChart({
+  range,
+  mode = "historical",
+}: CashflowChartProps) {
+  const historical = useCashflow(range);
+  const projected = useProjectedCashflow(range, mode);
+  const useProjectedData = mode !== "historical";
+  const { data, isLoading, isError } = useProjectedData ? projected : historical;
   const reduceMotion = useReducedMotion();
 
   const chartData = useMemo(() => {
@@ -61,13 +68,19 @@ export const CashflowChart = memo(function CashflowChart({ range }: CashflowChar
       income: point.income_cents,
       expense: point.expense_cents,
       balance: point.cumulative_balance_cents,
+      projected: "is_projected" in point ? point.is_projected : false,
     }));
   }, [data]);
 
   return (
     <Card className="lg:col-span-2">
       <CardHeader>
-        <CardTitle>Fluxo de caixa</CardTitle>
+        <CardTitle>
+          Fluxo de caixa
+          {useProjectedData && (
+            <span className="ml-2 text-xs font-normal text-muted">(inclui projeções)</span>
+          )}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading && <Skeleton className="h-[280px] w-full rounded-xl" />}
@@ -126,6 +139,7 @@ export const CashflowChart = memo(function CashflowChart({ range }: CashflowChar
                   name="Saldo"
                   stroke={CHART_COLORS.secondary}
                   strokeWidth={2}
+                  strokeDasharray={useProjectedData ? "4 4" : undefined}
                   dot={false}
                   isAnimationActive={!reduceMotion}
                 />

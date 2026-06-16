@@ -2,18 +2,11 @@
 
 import { Bell } from "lucide-react";
 
-import { Button } from "@/components/ui";
+import { Button, PeriodFilter } from "@/components/ui";
 import { useDashboardOverview } from "@/features/dashboard";
 import type { DateRangePreset } from "@/features/dashboard/types";
 import { useAuth } from "@/features/auth";
 import { formatPercent } from "@/lib/formatters/money";
-import { cn } from "@/lib/utils";
-
-const PRESETS: { id: DateRangePreset; label: string }[] = [
-  { id: "7d", label: "7D" },
-  { id: "30d", label: "30D" },
-  { id: "1y", label: "1A" },
-];
 
 export type DashboardHeaderProps = {
   range: DateRangePreset;
@@ -22,12 +15,12 @@ export type DashboardHeaderProps = {
 
 export const DashboardHeader = ({ range, onRangeChange }: DashboardHeaderProps) => {
   const { user } = useAuth();
-  const { data: overview } = useDashboardOverview();
+  const { data: overview } = useDashboardOverview(range);
   const firstName = user?.name?.split(" ")[0] ?? "Usuário";
 
   const subcopy =
     overview !== undefined
-      ? `Taxa de economia: ${formatPercent(overview.savings_rate)} · ${overview.transaction_count} transações este mês`
+      ? `Taxa de economia: ${formatPercent(overview.savings_rate)} · ${overview.transaction_count} transações no período`
       : "Carregando resumo financeiro…";
 
   return (
@@ -40,28 +33,11 @@ export const DashboardHeader = ({ range, onRangeChange }: DashboardHeaderProps) 
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <div
-          className="inline-flex rounded-xl border border-border bg-elevated/40 p-1"
-          role="group"
-          aria-label="Período do dashboard"
-        >
-          {PRESETS.map((preset) => (
-            <button
-              key={preset.id}
-              type="button"
-              onClick={() => onRangeChange(preset.id)}
-              className={cn(
-                "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors",
-                range === preset.id
-                  ? "bg-primary text-bg"
-                  : "text-muted hover:text-foreground"
-              )}
-              aria-pressed={range === preset.id}
-            >
-              {preset.label}
-            </button>
-          ))}
-        </div>
+        <PeriodFilter
+          range={range}
+          onRangeChange={onRangeChange}
+          ariaLabel="Período do dashboard"
+        />
 
         <Button variant="outline" size="icon" aria-label="Notificações" className="shrink-0">
           <Bell className="h-4 w-4" />
@@ -77,4 +53,4 @@ export const DashboardHeader = ({ range, onRangeChange }: DashboardHeaderProps) 
       </div>
     </div>
   );
-}
+};

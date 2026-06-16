@@ -28,6 +28,7 @@ async def export_csv(
     amount_min_cents: Annotated[int | None, Query(ge=0)] = None,
     amount_max_cents: Annotated[int | None, Query(ge=0)] = None,
     search: Annotated[str | None, Query(min_length=1, max_length=200)] = None,
+    mode: Annotated[str, Query()] = "historical",
 ) -> Response:
     rows = await report_service.list_export_rows(
         workspace=context.workspace,
@@ -40,6 +41,7 @@ async def export_csv(
             amount_min_cents=amount_min_cents,
             amount_max_cents=amount_max_cents,
             search=search,
+            mode=mode,  # type: ignore[arg-type]
         ),
         limit=10_000,
         offset=0,
@@ -65,6 +67,7 @@ async def export_xlsx(
     amount_min_cents: Annotated[int | None, Query(ge=0)] = None,
     amount_max_cents: Annotated[int | None, Query(ge=0)] = None,
     search: Annotated[str | None, Query(min_length=1, max_length=200)] = None,
+    mode: Annotated[str, Query()] = "historical",
 ) -> Response:
     rows = await report_service.list_export_rows(
         workspace=context.workspace,
@@ -77,6 +80,7 @@ async def export_xlsx(
             amount_min_cents=amount_min_cents,
             amount_max_cents=amount_max_cents,
             search=search,
+            mode=mode,  # type: ignore[arg-type]
         ),
         limit=10_000,
         offset=0,

@@ -22,6 +22,8 @@ from models.workspace_membership import WorkspaceMembership
 from repositories.account_repository import AccountRepository
 from repositories.category_repository import CategoryRepository
 from repositories.transaction_repository import TransactionRepository
+from services.ai_stale_helper import mark_ai_score_stale
+from services.ai_stale_helper import mark_ai_score_stale
 
 
 class TransactionService:
@@ -74,6 +76,7 @@ class TransactionService:
             await self._session.refresh(tx)
 
         await self._session.commit()
+        await mark_ai_score_stale(self._session, workspace.id)
         return tx
 
     async def get_transaction(
@@ -186,6 +189,7 @@ class TransactionService:
             await self._session.refresh(updated)
 
         await self._session.commit()
+        await mark_ai_score_stale(self._session, workspace.id)
         return updated
 
     async def delete_transaction(self, *, workspace: Workspace, transaction_id: uuid.UUID) -> None:
@@ -199,6 +203,7 @@ class TransactionService:
             await self._transactions.delete(tx)
 
         await self._session.commit()
+        await mark_ai_score_stale(self._session, workspace.id)
 
     @staticmethod
     def assert_can_write(membership: WorkspaceMembership) -> None:

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.cache.base import AnalyticsCache
-from core.dates import current_month_range_utc
+from core.dates import DateRange, current_month_range_utc
 from models.workspace import Workspace
 from repositories.analytics_repository import AnalyticsRepository
 
@@ -38,26 +38,30 @@ class DashboardService:
     async def overview(self, *, workspace: Workspace) -> DashboardOverview:
         tz = workspace.timezone or "UTC"
         month_range = current_month_range_utc(tz=tz)
+        return await self.overview_for_range(workspace=workspace, date_range=month_range)
 
+    async def overview_for_range(
+        self, *, workspace: Workspace, date_range: DateRange
+    ) -> DashboardOverview:
         total_balance = await self._analytics.total_balance_cents(workspace_id=workspace.id)
         income, expense, count = await self._analytics.monthly_income_expense_and_count(
             workspace_id=workspace.id,
-            start_date=month_range.start,
-            end_date=month_range.end,
+            start_date=date_range.start,
+            end_date=date_range.end,
         )
         savings = int(income) - int(expense)
         savings_rate = 0.0 if income == 0 else float(savings) / float(income)
 
         biggest_income = await self._analytics.biggest_transaction(
             workspace_id=workspace.id,
-            start_date=month_range.start,
-            end_date=month_range.end,
+            start_date=date_range.start,
+            end_date=date_range.end,
             type="income",
         )
         biggest_expense = await self._analytics.biggest_transaction(
             workspace_id=workspace.id,
-            start_date=month_range.start,
-            end_date=month_range.end,
+            start_date=date_range.start,
+            end_date=date_range.end,
             type="expense",
         )
 
