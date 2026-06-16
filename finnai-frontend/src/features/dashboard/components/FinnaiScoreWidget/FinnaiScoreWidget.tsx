@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { Skeleton } from "@/components/ui";
-import { useFinnAIScore } from "@/features/ai-score";
+import { hasDisplayableScore, useFinnAIScore } from "@/features/ai-score";
 import { useWorkspaceSlug } from "@/features/workspaces";
 import { workspacePath } from "@/shared/config/routes";
 
@@ -13,7 +13,7 @@ export const FinnAIScoreWidget = () => {
   const slug = useWorkspaceSlug();
   const { data, isLoading, isError } = useFinnAIScore();
 
-  const score = data?.score ?? null;
+  const score = hasDisplayableScore(data) ? data!.score : null;
 
   return (
     <Card className="border-primary/20 bg-linear-to-br from-surface to-elevated/30">
@@ -39,10 +39,12 @@ export const FinnAIScoreWidget = () => {
             </div>
             <div>
               <p className="text-sm font-semibold text-foreground">
-                {data?.label ?? "Análise em breve"}
+                {hasDisplayableScore(data) ? data!.label : "Análise em breve"}
               </p>
               <p className="mt-1 text-xs text-muted">
-                {data?.summary ?? "Conecte suas contas para gerar o score."}
+                {hasDisplayableScore(data)
+                  ? data!.summary
+                  : "Conecte suas contas para gerar o score."}
               </p>
             </div>
             <Button asChild variant="outline" className="w-full">

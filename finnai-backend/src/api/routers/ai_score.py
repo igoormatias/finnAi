@@ -29,6 +29,7 @@ async def get_score(
         status=score.status,
         last_error=score.last_error,
         is_stale=bool(score.is_stale),
+        last_requested_at=score.last_requested_at,
     )
 
 
@@ -40,11 +41,20 @@ async def regenerate(
     background_tasks: BackgroundTasks,
 ) -> RegenerateResponse:
     result = await service.request_regenerate(workspace=context.workspace)
-    if not result.debounced:
+    if not result.debounced and result.generation_epoch is not None:
         if settings.app_env.value == "test" or settings.ai_score_sync:
-            await service.run_regeneration_in_session(workspace=context.workspace)
+            await service.run_regeneration_in_session(
+                workspace=context.workspace,
+                expected_epoch=result.generation_epoch,
+            )
         else:
             background_tasks.add_task(
-                service.run_regeneration, workspace_id=context.workspace.id
+                service.run_regeneration,
+                workspace_id=context.workspace.id,
+                expected_epoch=result.generation_epoch,
             )
-    return RegenerateResponse(status=result.status, debounced=result.debounced)
+    return RegenerateResponse(
+        status=result.status,
+        debounced=result.debounced,
+        retries_remaining=result.retries_remaining,
+    )

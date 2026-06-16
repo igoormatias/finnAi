@@ -12,3 +12,4 @@ export * from "./hooks/use-finnai-score";
 export * from "./hooks/use-regenerate-score";
 export * from "./services/ai-score-service";
 export * from "./types";
+export { hasDisplayableScore, isScorePopulated } from "./utils/optimistic-score";

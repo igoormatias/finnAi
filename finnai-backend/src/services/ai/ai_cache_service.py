@@ -31,6 +31,12 @@ class AIScoreCacheService:
         return score
 
     async def should_debounce(self, score: WorkspaceFinancialScore) -> bool:
+        if (
+            score.status == "failed"
+            and score.failure_attempt_count <= self._settings.ai_score_failure_retry_limit
+        ):
+            return False
+
         if score.last_requested_at is None:
             return False
         last = score.last_requested_at
@@ -40,26 +46,53 @@ class AIScoreCacheService:
             seconds=self._settings.ai_score_debounce_seconds
         )
 
-    async def mark_requested(self, score: WorkspaceFinancialScore) -> None:
+    def retries_remaining(self, score: WorkspaceFinancialScore) -> int | None:
+        if score.status != "failed":
+            return None
+        return max(0, self._settings.ai_score_failure_retry_limit - score.failure_attempt_count)
+
+    async def mark_requested(self, score: WorkspaceFinancialScore) -> int:
         score.last_requested_at = datetime.now(timezone.utc)
         score.status = "pending"
         score.last_error = None
+        score.generation_epoch = int(score.generation_epoch or 0) + 1
         await self._session.flush()
+        return int(score.generation_epoch)
 
     async def mark_running(self, score: WorkspaceFinancialScore) -> None:
         score.status = "running"
+        score.last_error = None
         await self._session.flush()
 
-    async def mark_failed(self, score: WorkspaceFinancialScore, error: str) -> None:
+    async def mark_failed(
+        self,
+        score: WorkspaceFinancialScore,
+        error: str,
+        *,
+        expected_epoch: int | None = None,
+    ) -> bool:
+        if expected_epoch is not None and int(score.generation_epoch or 0) != expected_epoch:
+            return False
         score.status = "failed"
         score.last_error = error[:1024]
+        score.failure_attempt_count = int(score.failure_attempt_count or 0) + 1
         await self._session.flush()
+        return True
 
-    async def mark_success(self, score: WorkspaceFinancialScore) -> None:
+    async def mark_success(
+        self,
+        score: WorkspaceFinancialScore,
+        *,
+        expected_epoch: int | None = None,
+    ) -> bool:
+        if expected_epoch is not None and int(score.generation_epoch or 0) != expected_epoch:
+            return False
         score.status = "idle"
         score.last_error = None
         score.is_stale = False
+        score.failure_attempt_count = 0
         await self._session.flush()
+        return True
 
     async def mark_stale(self, *, workspace_id: uuid.UUID) -> None:
         result = await self._session.execute(

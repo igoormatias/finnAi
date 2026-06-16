@@ -94,7 +94,8 @@ export type EmergencyReserve = {
   avg_monthly_expense_cents: number;
   target_cents: number;
   target_months: number;
-  coverage_months: number;
+  coverage_months: number | null;
+  coverage_basis: "avg_3m" | "current_month" | "goal_implied" | null;
   has_emergency_goal: boolean;
   goal_id: string | null;
 };

@@ -20,11 +20,15 @@ from services.ai.ai_orchestrator import AIOrchestrator
 
 logger = logging.getLogger(__name__)
 
+GENERATION_STUCK_SECONDS = 90
+
 
 @dataclass(frozen=True)
 class RegenerateResponse:
     status: str
     debounced: bool
+    retries_remaining: int | None = None
+    generation_epoch: int | None = None
 
 
 class FinancialScoreService:
@@ -43,8 +47,8 @@ class FinancialScoreService:
         score = result.scalar_one_or_none()
         if score is None:
             raise AIScoreNotFoundException("Financial score not generated yet")
-        if is_pending_stuck(score, now_utc=datetime.now(timezone.utc), max_age_seconds=90):
-            await self._cache.mark_failed(score, "Job stuck (pending too long)")
+        if is_generation_stuck(score, now_utc=datetime.now(timezone.utc), max_age_seconds=GENERATION_STUCK_SECONDS):
+            await self._cache.mark_failed(score, "Job stuck (generation timed out)")
             await self._session.commit()
         if score.status == "idle" and not _is_score_populated(score):
             raise AIScoreNotFoundException("Financial score not generated yet")
@@ -52,24 +56,52 @@ class FinancialScoreService:
 
     async def request_regenerate(self, *, workspace: Workspace) -> RegenerateResponse:
         score = await self._cache.get_or_create(workspace_id=workspace.id)
+        now = datetime.now(timezone.utc)
+
+        if score.status in ("pending", "running"):
+            if is_generation_stuck(score, now_utc=now, max_age_seconds=GENERATION_STUCK_SECONDS):
+                await self._cache.mark_failed(score, "Job stuck (generation timed out)")
+            else:
+                await self._session.commit()
+                return RegenerateResponse(
+                    status=score.status,
+                    debounced=True,
+                    retries_remaining=None,
+                    generation_epoch=int(score.generation_epoch or 0),
+                )
+
         if await self._cache.should_debounce(score):
             await self._session.commit()
-            return RegenerateResponse(status=score.status, debounced=True)
+            return RegenerateResponse(
+                status=score.status,
+                debounced=True,
+                retries_remaining=self._cache.retries_remaining(score),
+                generation_epoch=int(score.generation_epoch or 0),
+            )
 
-        await self._cache.mark_requested(score)
+        epoch = await self._cache.mark_requested(score)
         await self._session.commit()
-        return RegenerateResponse(status="pending", debounced=False)
+        return RegenerateResponse(
+            status="pending",
+            debounced=False,
+            retries_remaining=None,
+            generation_epoch=epoch,
+        )
 
-    async def run_regeneration_in_session(self, *, workspace: Workspace) -> None:
+    async def run_regeneration_in_session(
+        self, *, workspace: Workspace, expected_epoch: int
+    ) -> None:
         orchestrator = AIOrchestrator(self._session, self._settings, self._provider)
         try:
-            await orchestrator.generate_and_persist(workspace=workspace)
+            await orchestrator.generate_and_persist(
+                workspace=workspace, expected_epoch=expected_epoch
+            )
         except Exception as exc:  # noqa: BLE001
             score = await self._cache.get_or_create(workspace_id=workspace.id)
-            await self._cache.mark_failed(score, str(exc))
+            await self._cache.mark_failed(score, str(exc), expected_epoch=expected_epoch)
             await self._session.commit()
 
-    async def run_regeneration(self, *, workspace_id) -> None:
+    async def run_regeneration(self, *, workspace_id, expected_epoch: int) -> None:
         sessionmaker = get_sessionmaker()
         async with sessionmaker() as session:
             workspace = await WorkspaceRepository(session).get_by_id(workspace_id)
@@ -79,19 +111,26 @@ class FinancialScoreService:
             cache = AIScoreCacheService(session, self._settings)
             try:
                 score = await cache.get_or_create(workspace_id=workspace.id)
-                score.status = "running"
-                await session.flush()
+                if int(score.generation_epoch or 0) != expected_epoch:
+                    return
+                await cache.mark_running(score)
                 await session.commit()
-                await orchestrator.generate_and_persist(workspace=workspace)
+                await orchestrator.generate_and_persist(
+                    workspace=workspace, expected_epoch=expected_epoch
+                )
             except Exception as exc:  # noqa: BLE001
-                logger.exception("AI score regeneration failed", extra={"workspace_id": str(workspace_id)})
+                logger.exception(
+                    "AI score regeneration failed", extra={"workspace_id": str(workspace_id)}
+                )
                 score = await cache.get_or_create(workspace_id=workspace.id)
-                await cache.mark_failed(score, str(exc))
+                await cache.mark_failed(score, str(exc), expected_epoch=expected_epoch)
                 await session.commit()
 
 
-def is_pending_stuck(score: WorkspaceFinancialScore, *, now_utc: datetime, max_age_seconds: int) -> bool:
-    if score.status != "pending":
+def is_generation_stuck(
+    score: WorkspaceFinancialScore, *, now_utc: datetime, max_age_seconds: int
+) -> bool:
+    if score.status not in ("pending", "running"):
         return False
     if score.last_requested_at is None:
         return False

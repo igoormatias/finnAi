@@ -21,13 +21,18 @@ export function useRegenerateScore() {
     mutationFn: () => regenerateScore(slug),
     onSuccess: (result) => {
       if (result.debounced) {
-        toast.message("Aguarde alguns minutos antes de gerar novamente.");
+        if (result.retries_remaining === 0) {
+          toast.message("Limite de tentativas atingido. Aguarde alguns minutos.");
+        } else {
+          toast.message("Aguarde alguns minutos antes de gerar novamente.");
+        }
         return;
       }
 
       const current = queryClient.getQueryData<FinnAIScore | null>(scoreKey);
       queryClient.setQueryData<FinnAIScore | null>(scoreKey, applyPendingScoreOptimistic(current));
       startGenerating(isScorePopulated(current) ? current!.generated_at : null);
+      void queryClient.refetchQueries({ queryKey: scoreKey });
       toast.message("IA analisando suas finanças…");
     },
     onError: (err) => {

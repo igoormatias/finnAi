@@ -28,8 +28,12 @@ class AIOrchestrator:
         self._analytics = AnalyticsRepository(session)
         self._cache = AIScoreCacheService(session, settings)
 
-    async def generate_and_persist(self, *, workspace: Workspace) -> WorkspaceFinancialScore:
+    async def generate_and_persist(
+        self, *, workspace: Workspace, expected_epoch: int | None = None
+    ) -> WorkspaceFinancialScore:
         score_row = await self._cache.get_or_create(workspace_id=workspace.id)
+        if expected_epoch is not None and int(score_row.generation_epoch or 0) != expected_epoch:
+            return score_row
 
         await self._cache.mark_running(score_row)
         await self._session.commit()
@@ -80,7 +84,7 @@ class AIOrchestrator:
         score_row.provider = self._settings.ai_provider
         score_row.model = completion.model
 
-        await self._cache.mark_success(score_row)
+        await self._cache.mark_success(score_row, expected_epoch=expected_epoch)
         await self._session.commit()
         await self._session.refresh(score_row)
         return score_row

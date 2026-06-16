@@ -74,6 +74,9 @@ class Settings(BaseSettings):
     ai_score_debounce_seconds: int = Field(
         default=600, validation_alias="AI_SCORE_DEBOUNCE_SECONDS"
     )
+    ai_score_failure_retry_limit: int = Field(
+        default=5, validation_alias="AI_SCORE_FAILURE_RETRY_LIMIT"
+    )
     ai_score_sync: bool = Field(default=False, validation_alias="AI_SCORE_SYNC")
 
 

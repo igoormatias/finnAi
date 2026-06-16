@@ -11,9 +11,18 @@ import {
   useAIScoreUiStore,
 } from "../../store/ai-score-ui-store";
 
+function isFailureForCurrentAttempt(
+  lastRequestedAt: string | null | undefined,
+  regenerationStartedAt: string | null
+): boolean {
+  if (!regenerationStartedAt || !lastRequestedAt) return true;
+  return new Date(lastRequestedAt).getTime() >= new Date(regenerationStartedAt).getTime() - 1000;
+}
+
 export function useAIScorePolling() {
   const isGenerating = useAIScoreUiStore((s) => s.isGenerating);
   const baselineGeneratedAt = useAIScoreUiStore((s) => s.baselineGeneratedAt);
+  const regenerationStartedAt = useAIScoreUiStore((s) => s.regenerationStartedAt);
   const pollAttempts = useAIScoreUiStore((s) => s.pollAttempts);
   const incrementPoll = useAIScoreUiStore((s) => s.incrementPoll);
   const stopGenerating = useAIScoreUiStore((s) => s.stopGenerating);
@@ -38,10 +47,11 @@ export function useAIScorePolling() {
     const score = query.data;
 
     if (score?.status === "failed") {
-      stopGenerating();
-      if (score.last_error?.trim()) {
-        toast.error(score.last_error.trim());
+      if (!isFailureForCurrentAttempt(score.last_requested_at, regenerationStartedAt)) {
+        return;
       }
+      stopGenerating();
+      toast.error("Não foi possível atualizar o score. Tente novamente em instantes.");
       return;
     }
 
@@ -60,6 +70,7 @@ export function useAIScorePolling() {
     isGenerating,
     query.data,
     baselineGeneratedAt,
+    regenerationStartedAt,
     pollAttempts,
     stopGenerating,
     setGenerationTimedOut,

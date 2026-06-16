@@ -212,6 +212,7 @@ async def emergency_reserve(
         target_cents=result.target_cents,
         target_months=result.target_months,
         coverage_months=result.coverage_months,
+        coverage_basis=result.coverage_basis,
         has_emergency_goal=result.has_emergency_goal,
         goal_id=__import__("uuid").UUID(result.goal_id) if result.goal_id else None,
     )

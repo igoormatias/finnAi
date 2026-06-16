@@ -64,8 +64,21 @@ export const EmergencyReserveCard = () => {
 
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
           <span>Despesa média: {formatCurrencyBRL(data.avg_monthly_expense_cents)}/mês</span>
-          <Badge variant="default">{data.coverage_months} meses de cobertura</Badge>
+          {data.coverage_months != null ? (
+            <Badge variant="default">
+              {data.coverage_months.toLocaleString("pt-BR", { maximumFractionDigits: 1 })} meses de
+              cobertura
+            </Badge>
+          ) : (
+            <Badge variant="default">Cobertura indisponível</Badge>
+          )}
         </div>
+
+        {data.coverage_months == null && (
+          <p className="text-xs text-muted">
+            Cadastre despesas ou defina uma meta de reserva para calcular a cobertura.
+          </p>
+        )}
 
         {!data.has_emergency_goal && (
           <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">

@@ -49,5 +49,11 @@ class WorkspaceFinancialScore(Base, UUIDPrimaryKeyMixin):
     is_stale: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=True, server_default="true", index=True
     )
+    failure_attempt_count: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
+    generation_epoch: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0"
+    )
 
     workspace: Mapped[Workspace] = relationship(lazy="selectin")

@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Calendar, Repeat, Save } from "lucide-react";
+import { Repeat, Save } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -9,6 +9,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui";
 import { Card } from "@/components/ui";
 import { CurrencyInput } from "@/components/ui";
+import { DateInput } from "@/components/ui";
 import { Input } from "@/components/ui";
 import {
   Select,
@@ -272,15 +273,7 @@ export const TransactionFormSheet = ({
               <label className="text-xs font-medium text-muted" htmlFor="transaction-date">
                 Data
               </label>
-              <div className="relative">
-                <Calendar className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-                <Input
-                  id="transaction-date"
-                  {...form.register("transaction_date")}
-                  type="date"
-                  className="min-h-11 w-full pl-9 scheme-light dark:scheme-dark"
-                />
-              </div>
+              <DateInput id="transaction-date" {...form.register("transaction_date")} />
               {form.formState.errors.transaction_date && (
                 <p className="text-xs text-danger">{form.formState.errors.transaction_date.message}</p>
               )}

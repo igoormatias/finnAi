@@ -33,3 +33,8 @@ export function isScorePopulated(
     score.summary.trim().length > 0
   );
 }
+
+/** Prior score still readable (label + summary), regardless of job status. */
+export function hasDisplayableScore(score: FinnAIScore | null | undefined): boolean {
+  return !!score && score.label.trim().length > 0 && score.summary.trim().length > 0;
+}

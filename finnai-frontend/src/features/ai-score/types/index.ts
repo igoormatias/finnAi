@@ -11,11 +11,13 @@ export type FinnAIScore = {
   status: "idle" | "pending" | "running" | "failed";
   last_error?: string | null;
   is_stale: boolean;
+  last_requested_at?: string | null;
 };
 
 export type RegenerateScoreResponse = {
   status: string;
   debounced: boolean;
+  retries_remaining?: number | null;
 };
 
 export type AIScoreUiStatus =

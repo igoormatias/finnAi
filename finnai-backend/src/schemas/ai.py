@@ -19,8 +19,10 @@ class FinnAIScoreResponse(BaseModel):
     status: str
     last_error: str | None = None
     is_stale: bool
+    last_requested_at: datetime | None = None
 
 
 class RegenerateResponse(BaseModel):
     status: str
     debounced: bool
+    retries_remaining: int | None = None

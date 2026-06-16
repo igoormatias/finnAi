@@ -89,7 +89,8 @@ class EmergencyReserveResponse(BaseModel):
     avg_monthly_expense_cents: int
     target_cents: int
     target_months: int
-    coverage_months: float
+    coverage_months: float | None = None
+    coverage_basis: Literal["avg_3m", "current_month", "goal_implied"] | None = None
     has_emergency_goal: bool
     goal_id: uuid.UUID | None = None
 
