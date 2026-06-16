@@ -1,14 +1,14 @@
 import { CheckCircle2, PiggyBank, Target, TrendingUp } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
-import { formatCentsBRL } from "@/lib/formatters/money";
+import { formatCurrencyBRL } from "@/lib/formatters/money";
 
 import type { GoalsOverview } from "../../types";
 
 const cards = [
   { key: "active", label: "Metas ativas", icon: Target, field: "active_count" as const, format: (v: number) => String(v) },
   { key: "completed", label: "Concluídas", icon: CheckCircle2, field: "completed_count" as const, format: (v: number) => String(v) },
-  { key: "saved", label: "Valor economizado", icon: PiggyBank, field: "total_saved_cents" as const, format: formatCentsBRL },
+  { key: "saved", label: "Valor economizado", icon: PiggyBank, field: "total_saved_cents" as const, format: formatCurrencyBRL },
   { key: "progress", label: "Progresso total", icon: TrendingUp, field: "total_progress_percent" as const, format: (v: number) => `${v}%` },
 ];
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,6 +10,8 @@ from domain.exceptions import GoalNotFoundException
 from domain.goals import GoalPriority, GoalStatus, GoalType
 from models.workspace import Workspace
 from models.workspace_goal import WorkspaceGoal
+from models.workspace_goal_contribution import WorkspaceGoalContribution
+from repositories.goal_contribution_repository import GoalContributionRepository
 from repositories.goal_repository import GoalRepository
 from schemas.goals import GoalsOverviewResponse
 
@@ -26,6 +28,7 @@ class GoalService:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
         self._goals = GoalRepository(session)
+        self._contributions = GoalContributionRepository(session)
 
     async def list_goals(self, workspace: Workspace) -> list[WorkspaceGoal]:
         return await self._goals.list_by_workspace(workspace.id)
@@ -125,14 +128,44 @@ class GoalService:
         return updated
 
     async def add_contribution(
-        self, *, workspace: Workspace, goal_id: uuid.UUID, amount_cents: int
+        self,
+        *,
+        workspace: Workspace,
+        goal_id: uuid.UUID,
+        amount_cents: int,
+        contributed_at: date | None = None,
+        notes: str | None = None,
+        created_by_user_id: uuid.UUID | None = None,
     ) -> WorkspaceGoal:
         goal = await self._get_goal(workspace, goal_id)
+        contribution_date = contributed_at or date.today()
+        await self._contributions.create(
+            workspace_id=workspace.id,
+            goal_id=goal.id,
+            amount_cents=amount_cents,
+            contributed_at=contribution_date,
+            notes=notes.strip() if notes else None,
+            created_by_user_id=created_by_user_id,
+        )
         new_current = goal.current_amount_cents + amount_cents
         return await self.update_goal(
             workspace=workspace,
             goal_id=goal_id,
             current_amount_cents=new_current,
+        )
+
+    async def list_contributions(
+        self,
+        *,
+        workspace: Workspace,
+        goal_id: uuid.UUID,
+        limit: int = 50,
+    ) -> list[WorkspaceGoalContribution]:
+        await self._get_goal(workspace, goal_id)
+        return await self._contributions.list_by_goal(
+            workspace_id=workspace.id,
+            goal_id=goal_id,
+            limit=limit,
         )
 
     async def delete_goal(self, *, workspace: Workspace, goal_id: uuid.UUID) -> None:

@@ -11,7 +11,7 @@ import { ChartError } from "@/features/dashboard";
 import { useCategoryAnalytics } from "@/features/dashboard";
 import type { DateRangePreset } from "@/features/dashboard/types";
 import { CHART_COLORS, chartTooltipStyle } from "../../utils/chart-theme";
-import { formatCentsBRL, formatPercent } from "@/lib/formatters/money";
+import { formatCurrencyBRL, formatPercent } from "@/lib/formatters/money";
 import { queryKeys } from "@/shared/api/query-keys";
 
 type CategoryDonutChartProps = {
@@ -77,14 +77,14 @@ export const CategoryDonutChart = memo(function CategoryDonutChart({ range }: Ca
                   <Tooltip
                     contentStyle={chartTooltipStyle}
                     formatter={(value) =>
-                      formatCentsBRL(typeof value === "number" ? value : Number(value ?? 0))
+                      formatCurrencyBRL(typeof value === "number" ? value : Number(value ?? 0))
                     }
                   />
                 </PieChart>
               </ResponsiveContainer>
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
                 <span className="text-xs text-muted">Total</span>
-                <span className="text-lg font-bold text-foreground">{formatCentsBRL(total)}</span>
+                <span className="text-lg font-bold text-foreground">{formatCurrencyBRL(total)}</span>
               </div>
             </div>
 

@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { ConfirmationDialog } from "@/components/ui";
 import { Input } from "@/components/ui";
 import { Skeleton } from "@/components/ui";
-import { PrivacyToggle } from "@/features/workspaces";
+import { PrivacyToggle, roleLabel } from "@/features/workspaces";
 import {
   useDeleteWorkspace,
   useLeaveWorkspace,
@@ -108,7 +108,9 @@ export const WorkspaceSettingsPage = () => {
     <section className="grid max-w-2xl gap-6">
       <header>
         <h1 className="text-xl font-semibold tracking-tight">Configurações do workspace</h1>
-        <p className="text-sm text-muted">Papel atual: {currentRole ?? "—"}</p>
+        <p className="text-sm text-muted">
+          Papel atual: {currentRole ? roleLabel(currentRole) : "—"}
+        </p>
       </header>
 
       <Card>

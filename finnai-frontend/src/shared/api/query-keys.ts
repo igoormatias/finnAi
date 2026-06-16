@@ -35,5 +35,7 @@ export const queryKeys = {
   goals: {
     list: (slug: string) => ["goals", slug, "list"] as const,
     overview: (slug: string) => ["goals", slug, "overview"] as const,
+    contributions: (slug: string, goalId: string) =>
+      ["goals", slug, goalId, "contributions"] as const,
   },
 } as const;

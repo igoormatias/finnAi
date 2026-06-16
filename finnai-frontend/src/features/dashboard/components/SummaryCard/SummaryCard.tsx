@@ -6,7 +6,7 @@ import { TrendingDown, TrendingUp } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { Skeleton } from "@/components/ui";
-import { formatCentsBRL, formatGrowthRate } from "@/lib/formatters/money";
+import { formatCurrencyBRL, formatGrowthRate } from "@/lib/formatters/money";
 import { cn } from "@/lib/utils";
 
 export type SummaryCardProps = {
@@ -52,7 +52,7 @@ export const SummaryCard = ({
   }
 
   const trendUp = trend !== undefined && trend >= 0;
-  const formatted = formatCentsBRL(valueCents);
+  const formatted = formatCurrencyBRL(valueCents);
 
   return (
     <motion.div

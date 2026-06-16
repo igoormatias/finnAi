@@ -1,13 +1,15 @@
 "use client";
 
-import { Calendar, Pencil, Trash2 } from "lucide-react";
+import { Calendar, Pencil, Trash2, Wallet } from "lucide-react";
 
 import { Badge } from "@/components/ui";
 import { Button } from "@/components/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
-import { formatCentsBRL } from "@/lib/formatters/money";
+import { Skeleton } from "@/components/ui";
+import { formatCurrencyBRL } from "@/lib/formatters/money";
 import { cn } from "@/lib/utils";
 
+import { useGoalContributions } from "../../hooks/use-goal-contributions";
 import type { Goal } from "../../types";
 import {
   getGoalTypeLabel,
@@ -18,11 +20,31 @@ import { GoalProgressBar } from "../GoalProgressBar";
 
 type GoalCardProps = {
   goal: Goal;
+  canContribute?: boolean;
+  onContribute?: () => void;
   onEdit: () => void;
   onDelete: () => void;
 };
 
-export const GoalCard = ({ goal, onEdit, onDelete }: GoalCardProps) => {
+function formatContributionDate(isoDate: string): string {
+  return new Date(isoDate).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+export const GoalCard = ({
+  goal,
+  canContribute = false,
+  onContribute,
+  onEdit,
+  onDelete,
+}: GoalCardProps) => {
+  const contributionsQuery = useGoalContributions(goal.id);
+  const recentContributions = (contributionsQuery.data ?? []).slice(0, 3);
+  const remainingCents = Math.max(0, goal.target_amount_cents - goal.current_amount_cents);
+
   const targetLabel = goal.target_date
     ? new Date(goal.target_date).toLocaleDateString("pt-BR", {
         day: "2-digit",
@@ -30,6 +52,8 @@ export const GoalCard = ({ goal, onEdit, onDelete }: GoalCardProps) => {
         year: "numeric",
       })
     : "Sem prazo";
+
+  const showContribute = canContribute && goal.status === "active" && onContribute;
 
   return (
     <Card
@@ -64,27 +88,74 @@ export const GoalCard = ({ goal, onEdit, onDelete }: GoalCardProps) => {
         <div className="flex items-end justify-between gap-2">
           <div>
             <p className="text-xs text-muted">Atual</p>
-            <p className="text-lg font-semibold text-foreground">
-              {formatCentsBRL(goal.current_amount_cents)}
+            <p className="text-lg font-semibold text-foreground transition-all duration-300">
+              {formatCurrencyBRL(goal.current_amount_cents)}
             </p>
           </div>
           <div className="text-right">
             <p className="text-xs text-muted">Meta</p>
             <p className="text-sm font-medium text-muted">
-              {formatCentsBRL(goal.target_amount_cents)}
+              {formatCurrencyBRL(goal.target_amount_cents)}
             </p>
           </div>
         </div>
+
         <GoalProgressBar
           currentCents={goal.current_amount_cents}
           targetCents={goal.target_amount_cents}
         />
+
+        {goal.status === "active" && remainingCents > 0 && (
+          <p className="text-xs text-muted">
+            Faltam <span className="font-medium text-foreground">{formatCurrencyBRL(remainingCents)}</span> para concluir
+          </p>
+        )}
+
         <div className="flex items-center gap-2 text-xs text-muted">
           <Calendar className="h-3.5 w-3.5" aria-hidden />
           <span>{targetLabel}</span>
         </div>
+
         {goal.description && (
           <p className="line-clamp-2 text-sm text-muted">{goal.description}</p>
+        )}
+
+        {showContribute && (
+          <Button type="button" className="w-full sm:w-auto" onClick={onContribute}>
+            <Wallet className="h-4 w-4" />
+            Aportar
+          </Button>
+        )}
+
+        {(contributionsQuery.isLoading || recentContributions.length > 0) && (
+          <div className="rounded-xl border border-border bg-elevated/20 p-3">
+            <p className="text-xs font-medium text-muted">Últimos aportes</p>
+            <ul className="mt-2 space-y-2">
+              {contributionsQuery.isLoading ? (
+                <>
+                  <Skeleton className="h-8 w-full" />
+                  <Skeleton className="h-8 w-full" />
+                </>
+              ) : (
+                recentContributions.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex items-start justify-between gap-2 text-xs transition-opacity duration-300"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-medium text-foreground">
+                        {formatCurrencyBRL(item.amount_cents)}
+                      </p>
+                      <p className="text-muted">{formatContributionDate(item.contributed_at)}</p>
+                      {item.notes && (
+                        <p className="mt-0.5 line-clamp-1 text-muted">{item.notes}</p>
+                      )}
+                    </div>
+                  </li>
+                ))
+              )}
+            </ul>
+          </div>
         )}
       </CardContent>
     </Card>

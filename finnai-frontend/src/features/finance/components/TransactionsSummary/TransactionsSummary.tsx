@@ -5,7 +5,7 @@ import { ArrowDownRight, ArrowUpRight, Wallet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { Skeleton } from "@/components/ui";
 import type { Transaction } from "@/features/finance/types/finance-types";
-import { formatCentsBRL } from "@/lib/formatters/money";
+import { formatCurrencyBRL } from "@/lib/formatters/money";
 
 function sum(items: Transaction[], type: "income" | "expense") {
   return items.filter((t) => t.type === type).reduce((acc, t) => acc + t.amount_cents, 0);
@@ -43,7 +43,7 @@ export const TransactionsSummary = ({
           {showSkeleton ? (
             <Skeleton className="h-7 w-28" />
           ) : (
-            <div className="text-2xl font-bold text-success">{formatCentsBRL(incomes)}</div>
+            <div className="text-2xl font-bold text-success">{formatCurrencyBRL(incomes)}</div>
           )}
         </CardContent>
       </Card>
@@ -61,7 +61,7 @@ export const TransactionsSummary = ({
           {showSkeleton ? (
             <Skeleton className="h-7 w-28" />
           ) : (
-            <div className="text-2xl font-bold text-danger">{formatCentsBRL(expenses)}</div>
+            <div className="text-2xl font-bold text-danger">{formatCurrencyBRL(expenses)}</div>
           )}
         </CardContent>
       </Card>
@@ -79,7 +79,7 @@ export const TransactionsSummary = ({
           {showSkeleton ? (
             <Skeleton className="h-7 w-28" />
           ) : (
-            <div className="text-2xl font-bold text-foreground">{formatCentsBRL(net)}</div>
+            <div className="text-2xl font-bold text-foreground">{formatCurrencyBRL(net)}</div>
           )}
         </CardContent>
       </Card>

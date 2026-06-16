@@ -43,6 +43,21 @@ class GoalUpdate(BaseModel):
 
 class GoalContributionCreate(BaseModel):
     amount_cents: int = Field(gt=0)
+    contributed_at: date | None = None
+    notes: str | None = Field(default=None, max_length=2000)
+
+
+class GoalContributionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    goal_id: uuid.UUID
+    workspace_id: uuid.UUID
+    amount_cents: int
+    contributed_at: date
+    notes: str | None
+    created_by_user_id: uuid.UUID | None
+    created_at: datetime
 
 
 class GoalResponse(BaseModel):

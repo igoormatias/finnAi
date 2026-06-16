@@ -8,6 +8,7 @@ import { ErrorState } from "@/components/states";
 import { Badge } from "@/components/ui";
 import { Button } from "@/components/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { CurrencyInput } from "@/components/ui";
 import { Dialog, DialogContent } from "@/components/ui";
 import { Input } from "@/components/ui";
 import {
@@ -17,7 +18,7 @@ import {
   useUpdateAccount,
 } from "@/features/finance";
 import type { Account, AccountType } from "@/features/finance/types/finance-types";
-import { formatCentsBRL } from "@/lib/formatters/money";
+import { formatCurrencyBRL, parseCurrencyBRL } from "@/lib/formatters/money";
 import { cn } from "@/lib/utils";
 
 const ACCOUNT_TYPES: { id: AccountType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -49,7 +50,7 @@ function AccountCard({
             <Badge variant="default">{meta?.label ?? account.type}</Badge>
             <div className="inline-flex items-center gap-2 text-xs text-muted">
               <Icon className="h-4 w-4 text-primary" />
-              Saldo inicial: {formatCentsBRL(account.initial_balance_cents)}
+              Saldo inicial: {formatCurrencyBRL(account.initial_balance_cents)}
             </div>
           </div>
         </div>
@@ -66,7 +67,7 @@ function AccountCard({
         <div className="flex items-end justify-between">
           <div className="text-xs text-muted">Saldo atual</div>
           <div className={cn("text-2xl font-bold tabular-nums", "text-foreground")}>
-            {formatCentsBRL(account.current_balance_cents)}
+            {formatCurrencyBRL(account.current_balance_cents)}
           </div>
         </div>
       </CardContent>
@@ -74,82 +75,106 @@ function AccountCard({
   );
 }
 
+function AccountModalForm({
+  initial,
+  onSubmit,
+  onCancel,
+}: {
+  initial?: Account | null;
+  onSubmit: (values: { name: string; type: AccountType; initial_balance_cents?: number }) => void;
+  onCancel: () => void;
+}) {
+  const [name, setName] = useState(() => initial?.name ?? "");
+  const [type, setType] = useState<AccountType>(() => initial?.type ?? "checking");
+  const [initialBalance, setInitialBalance] = useState(() =>
+    initial && initial.initial_balance_cents > 0
+      ? formatCurrencyBRL(initial.initial_balance_cents)
+      : ""
+  );
+
+  return (
+    <>
+      <div className="space-y-1">
+        <div className="text-base font-semibold text-foreground">
+          {initial ? "Editar conta" : "Nova conta"}
+        </div>
+        <div className="text-sm text-muted">Cadastre contas para distribuir suas transações.</div>
+      </div>
+
+      <div className="grid gap-3">
+        <div className="grid gap-2">
+          <label className="text-xs font-medium text-muted">Nome</label>
+          <Input value={name} onChange={(e) => setName(e.currentTarget.value)} placeholder="Ex: Nubank" />
+        </div>
+
+        <div className="grid gap-2">
+          <label className="text-xs font-medium text-muted">Tipo</label>
+          <select
+            className="h-11 w-full rounded-xl border border-border bg-elevated/30 px-3 text-sm text-foreground outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/15"
+            value={type}
+            onChange={(e) => setType(e.currentTarget.value as AccountType)}
+          >
+            {ACCOUNT_TYPES.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {!initial && (
+          <div className="grid gap-2">
+            <label className="text-xs font-medium text-muted">Saldo inicial (R$)</label>
+            <CurrencyInput value={initialBalance} onChange={setInitialBalance} />
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" onClick={onCancel}>
+          Cancelar
+        </Button>
+        <Button
+          onClick={() => {
+            const cents = parseCurrencyBRL(initialBalance);
+            onSubmit({ name, type, initial_balance_cents: Number.isFinite(cents) ? cents : 0 });
+          }}
+          disabled={name.trim().length === 0}
+        >
+          Salvar
+        </Button>
+      </div>
+    </>
+  );
+}
+
 function AccountModal({
   open,
   onOpenChange,
   initial,
+  formKey,
   onSubmit,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initial?: Account | null;
+  formKey: number;
   onSubmit: (values: { name: string; type: AccountType; initial_balance_cents?: number }) => void;
 }) {
-  const [name, setName] = useState(initial?.name ?? "");
-  const [type, setType] = useState<AccountType>(initial?.type ?? "checking");
-  const [initialBalance, setInitialBalance] = useState(
-    initial ? String(initial.initial_balance_cents / 100) : "0"
-  );
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="space-y-4">
-        <div className="space-y-1">
-          <div className="text-base font-semibold text-foreground">
-            {initial ? "Editar conta" : "Nova conta"}
-          </div>
-          <div className="text-sm text-muted">Cadastre contas para distribuir suas transações.</div>
-        </div>
-
-        <div className="grid gap-3">
-          <div className="grid gap-2">
-            <label className="text-xs font-medium text-muted">Nome</label>
-            <Input value={name} onChange={(e) => setName(e.currentTarget.value)} placeholder="Ex: Nubank" />
-          </div>
-
-          <div className="grid gap-2">
-            <label className="text-xs font-medium text-muted">Tipo</label>
-            <select
-              className="h-11 w-full rounded-xl border border-border bg-elevated/30 px-3 text-sm text-foreground outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/15"
-              value={type}
-              onChange={(e) => setType(e.currentTarget.value as AccountType)}
-            >
-              {ACCOUNT_TYPES.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {!initial && (
-            <div className="grid gap-2">
-              <label className="text-xs font-medium text-muted">Saldo inicial (R$)</label>
-              <Input
-                inputMode="decimal"
-                value={initialBalance}
-                onChange={(e) => setInitialBalance(e.currentTarget.value)}
-                placeholder="0,00"
-              />
-            </div>
-          )}
-        </div>
-
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
-          </Button>
-          <Button
-            onClick={() => {
-              const cents = Math.round(Number(initialBalance.replace(",", ".")) * 100);
-              onSubmit({ name, type, initial_balance_cents: Number.isFinite(cents) ? cents : 0 });
+        {open ? (
+          <AccountModalForm
+            key={formKey}
+            initial={initial}
+            onSubmit={(values) => {
+              onSubmit(values);
               onOpenChange(false);
             }}
-            disabled={name.trim().length === 0}
-          >
-            Salvar
-          </Button>
-        </div>
+            onCancel={() => onOpenChange(false)}
+          />
+        ) : null}
       </DialogContent>
     </Dialog>
   );
@@ -163,8 +188,15 @@ export const FinanceAccountsPage = () => {
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Account | null>(null);
+  const [formKey, setFormKey] = useState(0);
 
-  const accounts = data ?? [];
+  const openModal = (account: Account | null) => {
+    setEditing(account);
+    setFormKey((key) => key + 1);
+    setOpen(true);
+  };
+
+  const accounts = useMemo(() => data ?? [], [data]);
   const totalBalance = useMemo(
     () => accounts.reduce((acc, a) => acc + a.current_balance_cents, 0),
     [accounts]
@@ -188,12 +220,7 @@ export const FinanceAccountsPage = () => {
           </p>
         </div>
 
-        <Button
-          onClick={() => {
-            setEditing(null);
-            setOpen(true);
-          }}
-        >
+        <Button onClick={() => openModal(null)}>
           <Plus className="h-4 w-4" />
           Nova conta
         </Button>
@@ -206,7 +233,7 @@ export const FinanceAccountsPage = () => {
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-bold tabular-nums text-foreground">
-            {formatCentsBRL(totalBalance)}
+            {formatCurrencyBRL(totalBalance)}
           </div>
           <div className="mt-2 text-xs text-muted">Soma dos saldos atuais de todas as contas.</div>
         </CardContent>
@@ -217,12 +244,7 @@ export const FinanceAccountsPage = () => {
           title="Sem contas"
           description="Crie uma conta para começar a lançar transações."
           action={
-            <Button
-              onClick={() => {
-                setEditing(null);
-                setOpen(true);
-              }}
-            >
+            <Button onClick={() => openModal(null)}>
               Criar conta
             </Button>
           }
@@ -235,10 +257,7 @@ export const FinanceAccountsPage = () => {
             <AccountCard
               key={account.id}
               account={account}
-              onEdit={() => {
-                setEditing(account);
-                setOpen(true);
-              }}
+              onEdit={() => openModal(account)}
               onDelete={() => void deleteMutation.mutateAsync(account.id)}
             />
           ))}
@@ -249,6 +268,7 @@ export const FinanceAccountsPage = () => {
         open={open}
         onOpenChange={setOpen}
         initial={editing}
+        formKey={formKey}
         onSubmit={(values) => {
           if (editing) {
             void updateMutation.mutateAsync({ accountId: editing.id, input: { name: values.name, type: values.type } });

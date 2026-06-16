@@ -23,3 +23,4 @@ export * from "./services/invites-service";
 export * from "./services/members-service";
 export * from "./services/workspace-service";
 export * from "./types";
+export * from "./utils/role-labels";

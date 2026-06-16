@@ -52,6 +52,10 @@ vi.mock("../../hooks/use-add-goal-contribution", () => ({
   useAddGoalContribution: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
+vi.mock("../../hooks/use-goal-contributions", () => ({
+  useGoalContributions: () => ({ data: [], isLoading: false }),
+}));
+
 vi.mock("@/features/workspaces", () => ({
   useWorkspacePermissions: () => ({ currentRole: "owner" }),
 }));
@@ -66,6 +70,7 @@ describe("GoalsPage", () => {
     render(<GoalsPage />);
     expect(screen.getByRole("heading", { name: "Metas" })).toBeInTheDocument();
     expect(screen.getByText("Viagem Europa")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Aportar/i })).toBeInTheDocument();
     expect(screen.getByText("Metas ativas")).toBeInTheDocument();
   });
 });

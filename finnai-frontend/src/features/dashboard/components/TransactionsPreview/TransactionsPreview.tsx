@@ -17,7 +17,7 @@ import {
 import { useRecentTransactions } from "@/features/dashboard";
 import { useWorkspaceSlug } from "@/features/workspaces";
 import { formatRelativeDate } from "@/lib/formatters/date";
-import { formatCentsBRL } from "@/lib/formatters/money";
+import { formatCurrencyBRL } from "@/lib/formatters/money";
 import { cn } from "@/lib/utils";
 import { workspacePath } from "@/shared/config/routes";
 
@@ -73,7 +73,7 @@ export const TransactionsPreview = () => {
                     )}
                   >
                     {tx.type === "income" ? "+" : "-"}
-                    {formatCentsBRL(tx.amount_cents)}
+                    {formatCurrencyBRL(tx.amount_cents)}
                   </TableCell>
                 </TableRow>
               ))}

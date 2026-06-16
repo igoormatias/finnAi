@@ -1,0 +1,40 @@
+---
+description: Use feature barrels (@/features/<name>) — never deep @/features paths
+globs: finnai-frontend/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Feature barrel imports (finnai-frontend)
+
+ESLint blocks deep imports under `@/features/*/components|hooks|services|utils/**`.
+
+Always import from the **public barrel** of each feature:
+
+```typescript
+// ❌ BAD — deep path (ESLint error)
+import { addGoalContribution } from "@/features/goals/services/goals-service";
+import { roleLabel } from "@/features/workspaces/utils/role-labels";
+
+// ✅ GOOD — feature barrel
+import { addGoalContribution, type Goal } from "@/features/goals";
+import { roleLabel } from "@/features/workspaces";
+```
+
+## Rules
+
+1. **Cross-feature or app code** → `@/features/<featureName>` only.
+2. **Services, hooks, types, utils** exported in `<feature>/index.ts` must be consumed via the barrel.
+3. **Inside the same feature**, prefer the barrel too (not `@/features/.../services/...`). Relative paths (`../../services/...`) are allowed only when avoiding a circular dependency — document why in a short comment.
+4. When adding a new service/hook/util, **export it from the feature `index.ts`** before importing elsewhere.
+
+## Barrels
+
+| Feature | Barrel |
+|---------|--------|
+| goals | `@/features/goals` |
+| workspaces | `@/features/workspaces` |
+| finance | `@/features/finance` |
+| dashboard | `@/features/dashboard` |
+| auth | `@/features/auth` |
+
+Shared code outside features: `@/shared/...`, `@/lib/...`, `@/components/...`.

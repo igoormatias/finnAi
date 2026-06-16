@@ -1,3 +1,5 @@
+import { formatCurrencyBRL } from "@/lib/formatters/money";
+
 import type { Goal } from "../../types";
 import { getGoalProgressPercent, getMonthlyProjectionCents } from "../goal-progress";
 
@@ -11,7 +13,7 @@ export function buildGoalInsight(goal: Goal): string {
   }
   const monthly = getMonthlyProjectionCents(goal);
   if (monthly != null && monthly > 0) {
-    return `Para atingir "${goal.name}" no prazo, reserve cerca de ${(monthly / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} por mês (${percent}% concluído).`;
+    return `Para atingir "${goal.name}" no prazo, reserve cerca de ${formatCurrencyBRL(monthly)} por mês (${percent}% concluído).`;
   }
   if (percent >= 75) {
     return `Você está na reta final de "${goal.name}" — faltam poucos passos para concluir.`;

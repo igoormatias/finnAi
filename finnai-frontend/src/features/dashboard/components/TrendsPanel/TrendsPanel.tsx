@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { Skeleton } from "@/components/ui";
 import { ErrorState } from "@/components/states";
 import { useTrendAnalytics } from "@/features/dashboard";
-import { formatCentsBRL, formatGrowthRate } from "@/lib/formatters/money";
+import { formatCurrencyBRL, formatGrowthRate } from "@/lib/formatters/money";
 import { cn } from "@/lib/utils";
 
 function TrendRow({
@@ -28,9 +28,9 @@ function TrendRow({
   return (
     <div className="rounded-xl border border-border bg-elevated/20 p-3">
       <p className="text-xs text-muted">{label}</p>
-      <p className="mt-1 text-lg font-semibold text-foreground">{formatCentsBRL(current)}</p>
+      <p className="mt-1 text-lg font-semibold text-foreground">{formatCurrencyBRL(current)}</p>
       <div className="mt-2 flex items-center justify-between text-xs">
-        <span className="text-muted">Anterior: {formatCentsBRL(previous)}</span>
+        <span className="text-muted">Anterior: {formatCurrencyBRL(previous)}</span>
         <span
           className={cn(
             "inline-flex items-center gap-1 font-medium",

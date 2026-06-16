@@ -6,6 +6,7 @@ export * from "./hooks/use-create-goal";
 export * from "./hooks/use-update-goal";
 export * from "./hooks/use-delete-goal";
 export * from "./hooks/use-add-goal-contribution";
+export * from "./hooks/use-goal-contributions";
 export * from "./services/goals-service";
 export * from "./types";
 export * from "./utils/goal-progress";

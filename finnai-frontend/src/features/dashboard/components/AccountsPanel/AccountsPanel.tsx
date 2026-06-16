@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/states";
 import { ErrorState } from "@/components/states";
 import { useAccountsAnalytics } from "@/features/dashboard";
 import { useWorkspaceSlug } from "@/features/workspaces";
-import { formatCentsBRL } from "@/lib/formatters/money";
+import { formatCurrencyBRL } from "@/lib/formatters/money";
 import { workspacePath } from "@/shared/config/routes";
 
 export const AccountsPanel = () => {
@@ -44,7 +44,7 @@ export const AccountsPanel = () => {
             <div key={account.account_id} className="space-y-1">
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium text-foreground">{account.name}</span>
-                <span className="text-muted">{formatCentsBRL(account.current_balance_cents)}</span>
+                <span className="text-muted">{formatCurrencyBRL(account.current_balance_cents)}</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-elevated/50">
                 <div

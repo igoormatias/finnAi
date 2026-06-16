@@ -7,14 +7,9 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { StaggerChildren, StaggerItem } from "@/components/motion";
 import { ErrorState } from "@/components/states";
 import { Button } from "@/components/ui";
+
 import { useWorkspacePermissions } from "@/features/workspaces";
 
-import { CreateGoalDialog } from "../CreateGoalDialog";
-import { GoalAnalyticsPanel } from "../GoalAnalyticsPanel";
-import { GoalCard } from "../GoalCard";
-import { GoalsEmpty } from "../GoalsEmpty";
-import { GoalsOverviewCards } from "../GoalsOverviewCards";
-import { GoalsSkeleton } from "../GoalsSkeleton";
 import { useAddGoalContribution } from "../../hooks/use-add-goal-contribution";
 import { useCreateGoal } from "../../hooks/use-create-goal";
 import { useDeleteGoal } from "../../hooks/use-delete-goal";
@@ -22,6 +17,13 @@ import { useGoals } from "../../hooks/use-goals";
 import { useGoalsOverview } from "../../hooks/use-goals-overview";
 import { useUpdateGoal } from "../../hooks/use-update-goal";
 import type { Goal } from "../../types";
+import { ContributeGoalDialog } from "../ContributeGoalDialog";
+import { CreateGoalDialog } from "../CreateGoalDialog";
+import { GoalAnalyticsPanel } from "../GoalAnalyticsPanel";
+import { GoalCard } from "../GoalCard";
+import { GoalsEmpty } from "../GoalsEmpty";
+import { GoalsOverviewCards } from "../GoalsOverviewCards";
+import { GoalsSkeleton } from "../GoalsSkeleton";
 
 export const GoalsPage = () => {
   const permissions = useWorkspacePermissions();
@@ -33,20 +35,32 @@ export const GoalsPage = () => {
   const addContribution = useAddGoalContribution();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [contributeOpen, setContributeOpen] = useState(false);
   const [editing, setEditing] = useState<Goal | null>(null);
+  const [contributingGoal, setContributingGoal] = useState<Goal | null>(null);
+  const [goalFormKey, setGoalFormKey] = useState(0);
+  const [contributeFormKey, setContributeFormKey] = useState(0);
 
   const canWrite = permissions.currentRole !== "viewer";
-  const goals = goalsQuery.data ?? [];
+  const goals = useMemo(() => goalsQuery.data ?? [], [goalsQuery.data]);
   const activeGoals = useMemo(() => goals.filter((g) => g.status === "active"), [goals]);
 
   const openCreate = () => {
     setEditing(null);
+    setGoalFormKey((key) => key + 1);
     setDialogOpen(true);
   };
 
   const openEdit = (goal: Goal) => {
     setEditing(goal);
+    setGoalFormKey((key) => key + 1);
     setDialogOpen(true);
+  };
+
+  const openContribute = (goal: Goal) => {
+    setContributingGoal(goal);
+    setContributeFormKey((key) => key + 1);
+    setContributeOpen(true);
   };
 
   if (goalsQuery.isLoading) return <GoalsSkeleton />;
@@ -96,6 +110,8 @@ export const GoalsPage = () => {
             <StaggerItem key={goal.id}>
               <GoalCard
                 goal={goal}
+                canContribute={canWrite}
+                onContribute={() => openContribute(goal)}
                 onEdit={() => openEdit(goal)}
                 onDelete={() => {
                   if (confirm(`Excluir a meta "${goal.name}"?`)) {
@@ -112,9 +128,8 @@ export const GoalsPage = () => {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         initial={editing}
-        isSubmitting={
-          createGoal.isPending || updateGoal.isPending || addContribution.isPending
-        }
+        formKey={goalFormKey}
+        isSubmitting={createGoal.isPending || updateGoal.isPending}
         onSubmit={(input) => {
           if (editing) {
             updateGoal.mutate(
@@ -125,16 +140,29 @@ export const GoalsPage = () => {
             createGoal.mutate(input, { onSuccess: () => setDialogOpen(false) });
           }
         }}
-        onContribution={
-          editing
-            ? (amountCents) => {
-                addContribution.mutate(
-                  { goalId: editing.id, amountCents },
-                  { onSuccess: () => setDialogOpen(false) }
-                );
-              }
-            : undefined
-        }
+      />
+
+      <ContributeGoalDialog
+        open={contributeOpen}
+        onOpenChange={(open) => {
+          setContributeOpen(open);
+          if (!open) setContributingGoal(null);
+        }}
+        goal={contributingGoal}
+        formKey={contributeFormKey}
+        isSubmitting={addContribution.isPending}
+        onSubmit={(input) => {
+          if (!contributingGoal) return;
+          addContribution.mutate(
+            { goalId: contributingGoal.id, input },
+            {
+              onSuccess: () => {
+                setContributeOpen(false);
+                setContributingGoal(null);
+              },
+            }
+          );
+        }}
       />
 
       {activeGoals.length > 0 && (

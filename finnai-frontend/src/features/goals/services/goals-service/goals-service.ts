@@ -2,6 +2,8 @@ import { apiFetch } from "@/shared/api/client";
 
 import type {
   Goal,
+  GoalContribution,
+  GoalContributionInput,
   GoalCreateInput,
   GoalUpdateInput,
   GoalsOverview,
@@ -36,12 +38,19 @@ export async function updateGoal(
 export async function addGoalContribution(
   slug: string,
   goalId: string,
-  amountCents: number
+  input: GoalContributionInput
 ): Promise<Goal> {
   return apiFetch<Goal>(`workspaces/${slug}/goals/${goalId}/contributions`, {
     method: "POST",
-    body: JSON.stringify({ amount_cents: amountCents }),
+    body: JSON.stringify(input),
   });
+}
+
+export async function listGoalContributions(
+  slug: string,
+  goalId: string
+): Promise<GoalContribution[]> {
+  return apiFetch<GoalContribution[]>(`workspaces/${slug}/goals/${goalId}/contributions`);
 }
 
 export async function deleteGoal(slug: string, goalId: string): Promise<void> {

@@ -3,11 +3,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Calendar, Repeat, Save } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui";
 import { Card } from "@/components/ui";
+import { CurrencyInput } from "@/components/ui";
 import { Input } from "@/components/ui";
 import {
   Select,
@@ -26,7 +27,7 @@ import type {
   TransactionType,
   TransactionUpdateInput,
 } from "@/features/finance/types/finance-types";
-import { parseBRLToCents } from "../../utils/currency";
+import { formatCurrencyBRL, parseCurrencyBRL } from "@/lib/formatters/money";
 import { cn } from "@/lib/utils";
 
 const schema = z.object({
@@ -54,9 +55,7 @@ function buildDefault({
     return {
       type: editing.type,
       description: editing.description || "",
-      amount: new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
-        editing.amount_cents / 100
-      ),
+      amount: formatCurrencyBRL(editing.amount_cents),
       category_id: editing.category_id,
       account_id: editing.account_id,
       transaction_date: editing.transaction_date.slice(0, 10),
@@ -108,11 +107,20 @@ export const TransactionFormSheet = ({
   });
 
   useEffect(() => {
-    form.reset(defaults);
-  }, [defaults, form]);
+    if (open) {
+      form.reset(defaults);
+    }
+  }, [open, defaults, form]);
 
-  const isRecurring = form.watch("is_recurring");
-  const type = form.watch("type");
+  const handleOpenChange = (next: boolean) => {
+    if (!next) {
+      form.reset(buildDefault({ editing: null, presetType: null }));
+    }
+    onOpenChange(next);
+  };
+
+  const isRecurring = useWatch({ control: form.control, name: "is_recurring" });
+  const type = useWatch({ control: form.control, name: "type" }) ?? defaults.type;
 
   const filteredCategories = useMemo(
     () => categories.filter((c) => c.type === type),
@@ -120,8 +128,8 @@ export const TransactionFormSheet = ({
   );
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="space-y-4">
+    <Sheet open={open} onOpenChange={handleOpenChange}>
+      <SheetContent side="right" className="space-y-4 overflow-y-auto overscroll-contain pb-24">
         <SheetHeader>
           <SheetTitle className="text-base font-semibold text-foreground">
             {editing ? "Editar transação" : "Nova transação"}
@@ -136,7 +144,7 @@ export const TransactionFormSheet = ({
           onSubmit={form.handleSubmit(async (values) => {
             setSubmitting(true);
             try {
-              const amount_cents = parseBRLToCents(values.amount);
+              const amount_cents = parseCurrencyBRL(values.amount);
 
               const base = {
                 type: values.type,
@@ -155,6 +163,7 @@ export const TransactionFormSheet = ({
               } else {
                 await onCreate(base);
               }
+              form.reset(buildDefault({ editing: null, presetType: null }));
             } finally {
               setSubmitting(false);
             }
@@ -197,10 +206,12 @@ export const TransactionFormSheet = ({
 
             <div className="grid gap-2">
               <label className="text-xs font-medium text-muted">Valor</label>
-              <Input
-                {...form.register("amount")}
-                inputMode="decimal"
-                placeholder="R$ 0,00"
+              <Controller
+                control={form.control}
+                name="amount"
+                render={({ field }) => (
+                  <CurrencyInput value={field.value} onChange={field.onChange} />
+                )}
               />
               {form.formState.errors.amount && (
                 <p className="text-xs text-danger">{form.formState.errors.amount.message}</p>
@@ -258,10 +269,17 @@ export const TransactionFormSheet = ({
             </div>
 
             <div className="grid gap-2">
-              <label className="text-xs font-medium text-muted">Data</label>
+              <label className="text-xs font-medium text-muted" htmlFor="transaction-date">
+                Data
+              </label>
               <div className="relative">
                 <Calendar className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-                <Input {...form.register("transaction_date")} type="date" className="pl-9" />
+                <Input
+                  id="transaction-date"
+                  {...form.register("transaction_date")}
+                  type="date"
+                  className="min-h-11 w-full pl-9 scheme-light dark:scheme-dark"
+                />
               </div>
               {form.formState.errors.transaction_date && (
                 <p className="text-xs text-danger">{form.formState.errors.transaction_date.message}</p>
@@ -309,7 +327,7 @@ export const TransactionFormSheet = ({
           </Card>
 
           <div className="flex items-center justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               Cancelar
             </Button>
             <Button type="submit" disabled={submitting || !form.formState.isValid}>

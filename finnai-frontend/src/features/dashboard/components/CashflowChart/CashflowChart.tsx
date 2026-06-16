@@ -21,7 +21,7 @@ import { useCashflow } from "@/features/dashboard";
 import type { DateRangePreset } from "@/features/dashboard/types";
 import { CHART_COLORS, chartTooltipStyle } from "../../utils/chart-theme";
 import { formatBucketLabel } from "@/lib/formatters/date";
-import { formatCentsBRL } from "@/lib/formatters/money";
+import { formatCurrencyBRL } from "@/lib/formatters/money";
 import { queryKeys } from "@/shared/api/query-keys";
 
 type CashflowChartProps = {
@@ -43,7 +43,7 @@ function CashflowTooltip({
       <p className="mb-1 font-medium text-foreground">{label}</p>
       {payload.map((entry) => (
         <p key={entry.name} style={{ color: entry.color }}>
-          {entry.name}: {formatCentsBRL(entry.value)}
+          {entry.name}: {formatCurrencyBRL(entry.value)}
         </p>
       ))}
     </div>
@@ -100,7 +100,7 @@ export const CashflowChart = memo(function CashflowChart({ range }: CashflowChar
                 <XAxis dataKey="label" tick={{ fill: CHART_COLORS.muted, fontSize: 11 }} />
                 <YAxis
                   tick={{ fill: CHART_COLORS.muted, fontSize: 11 }}
-                  tickFormatter={(v) => formatCentsBRL(Number(v)).replace("R$", "")}
+                  tickFormatter={(v) => formatCurrencyBRL(Number(v)).replace("R$", "")}
                   width={56}
                 />
                 <Tooltip content={<CashflowTooltip />} />

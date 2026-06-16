@@ -49,12 +49,26 @@ def test_goals_crud_and_overview(client: TestClient) -> None:
 
     contribution = client.post(
         f"/workspaces/{slug}/goals/{goal_id}/contributions",
-        json={"amount_cents": 75_000},
+        json={
+            "amount_cents": 75_000,
+            "contributed_at": "2026-06-01",
+            "notes": "Aporte inicial extra",
+        },
         headers=auth_headers(token),
     )
     assert contribution.status_code == 200
     assert contribution.json()["status"] == "completed"
     assert contribution.json()["current_amount_cents"] == 100_000
+
+    history = client.get(
+        f"/workspaces/{slug}/goals/{goal_id}/contributions",
+        headers=auth_headers(token),
+    )
+    assert history.status_code == 200
+    items = history.json()
+    assert len(items) == 1
+    assert items[0]["amount_cents"] == 75_000
+    assert items[0]["notes"] == "Aporte inicial extra"
 
     overview2 = client.get(f"/workspaces/{slug}/goals/overview", headers=auth_headers(token))
     assert overview2.json()["completed_count"] == 1

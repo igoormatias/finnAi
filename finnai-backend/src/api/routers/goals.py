@@ -10,6 +10,7 @@ from api.deps_workspaces import WorkspaceMemberDep
 from domain.goals import GoalPriority, GoalStatus, GoalType
 from schemas.goals import (
     GoalContributionCreate,
+    GoalContributionResponse,
     GoalCreate,
     GoalResponse,
     GoalsOverviewResponse,
@@ -75,6 +76,19 @@ async def update_goal(
     return GoalResponse.model_validate(goal)
 
 
+@router.get("/{goal_id}/contributions", response_model=list[GoalContributionResponse])
+async def list_contributions(
+    goal_id: uuid.UUID,
+    context: WorkspaceMemberDep,
+    session: DbSessionDep,
+) -> list[GoalContributionResponse]:
+    contributions = await GoalService(session).list_contributions(
+        workspace=context.workspace,
+        goal_id=goal_id,
+    )
+    return [GoalContributionResponse.model_validate(c) for c in contributions]
+
+
 @router.post("/{goal_id}/contributions", response_model=GoalResponse)
 async def add_contribution(
     goal_id: uuid.UUID,
@@ -86,6 +100,9 @@ async def add_contribution(
         workspace=context.workspace,
         goal_id=goal_id,
         amount_cents=body.amount_cents,
+        contributed_at=body.contributed_at,
+        notes=body.notes,
+        created_by_user_id=context.user.id,
     )
     return GoalResponse.model_validate(goal)
 

@@ -1,7 +1,7 @@
 import { Sparkles } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
-import { formatCentsBRL } from "@/lib/formatters/money";
+import { formatCurrencyBRL } from "@/lib/formatters/money";
 
 import type { Goal } from "../../types";
 import { buildPortfolioInsight } from "../../utils/goal-insights";
@@ -43,7 +43,7 @@ export const GoalAnalyticsPanel = ({ goals }: { goals: Goal[] }) => {
             Projeção mensal média
           </p>
           <p className="mt-1 text-lg font-semibold text-foreground">
-            {avgMonthly != null ? formatCentsBRL(avgMonthly) : "—"}
+            {avgMonthly != null ? formatCurrencyBRL(avgMonthly) : "—"}
           </p>
         </div>
         <div>

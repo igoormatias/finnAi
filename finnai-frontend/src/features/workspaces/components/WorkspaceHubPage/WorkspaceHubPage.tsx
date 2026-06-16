@@ -21,7 +21,7 @@ import { useWorkspaceMembers } from "@/features/workspaces";
 import { useWorkspaceSlug } from "@/features/workspaces";
 import { useWorkspaceUiStore } from "@/features/workspaces/store/workspace-ui-store";
 import { roleSubtitle } from "../../utils/role-labels";
-import { formatCentsBRL } from "@/lib/formatters/money";
+import { formatCurrencyBRL } from "@/lib/formatters/money";
 import { workspacePath } from "@/shared/config/routes";
 import { cn } from "@/lib/utils";
 
@@ -35,7 +35,7 @@ export const WorkspaceHubPage = () => {
   const privacy = useWorkspaceUiStore((s) => s.getPrivacy(slug));
   const setPrivacy = useWorkspaceUiStore((s) => s.setPrivacy);
 
-  const members = membersQuery.data ?? [];
+  const members = useMemo(() => membersQuery.data ?? [], [membersQuery.data]);
   const previewMembers = useMemo(() => members.slice(0, 5), [members]);
 
   const balance = overview.data?.total_balance_cents ?? 0;
@@ -93,7 +93,7 @@ export const WorkspaceHubPage = () => {
                 <Skeleton className="h-10 w-48" />
               ) : (
                 <>
-                  <p className="text-3xl font-bold tracking-tight">{formatCentsBRL(balance)}</p>
+                  <p className="text-3xl font-bold tracking-tight">{formatCurrencyBRL(balance)}</p>
                   <p className="flex items-center gap-1 text-sm text-success">
                     <ArrowUpRight className="h-4 w-4" />
                     {(savingsRate * 100).toFixed(1)}% taxa de poupança no período
@@ -204,7 +204,7 @@ export const WorkspaceHubPage = () => {
                   />
                   <p className="text-sm font-medium">{tx.description || "Transação"}</p>
                   <p className={cn("text-sm font-semibold", tx.type === "income" ? "text-success" : "text-danger")}>
-                    {formatCentsBRL(tx.amount_cents)}
+                    {formatCurrencyBRL(tx.amount_cents)}
                   </p>
                 </li>
               ))}

@@ -29,7 +29,8 @@ import {
 } from "@/components/ui";
 import type { Account, Category, Transaction } from "@/features/finance/types/finance-types";
 import { formatRelativeDate } from "@/lib/formatters/date";
-import { formatCentsBRL } from "@/lib/formatters/money";
+import { formatCurrencyBRL } from "@/lib/formatters/money";
+import { getRecurrenceLabel } from "@/shared/labels";
 import { cn } from "@/lib/utils";
 
 type TableProps = {
@@ -83,7 +84,7 @@ export const TransactionsTable = ({
             {row.original.is_recurring && (
               <div className="mt-1 inline-flex items-center gap-1 text-xs text-muted">
                 <Repeat className="h-3.5 w-3.5" />
-                {row.original.recurrence_rule ? `Recorrente (${row.original.recurrence_rule})` : "Recorrente"}
+                {getRecurrenceLabel(row.original.recurrence_rule)}
               </div>
             )}
           </div>
@@ -114,7 +115,7 @@ export const TransactionsTable = ({
             )}
           >
             {row.original.type === "income" ? "+" : "-"}
-            {formatCentsBRL(row.original.amount_cents)}
+            {formatCurrencyBRL(row.original.amount_cents)}
           </div>
         ),
       },

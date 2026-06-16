@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { deleteGoal } from "@/features/goals/services/goals-service";
+import { deleteGoal } from "@/features/goals";
 import { useWorkspaceSlug } from "@/features/workspaces";
 import { queryKeys } from "@/shared/api/query-keys";
 

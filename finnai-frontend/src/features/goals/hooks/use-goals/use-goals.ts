@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { listGoals } from "@/features/goals/services/goals-service";
+import { listGoals } from "@/features/goals";
 import { useWorkspaceSlug } from "@/features/workspaces";
 import { queryKeys } from "@/shared/api/query-keys";
 

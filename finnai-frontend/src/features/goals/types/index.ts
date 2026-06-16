@@ -48,3 +48,20 @@ export type GoalsOverview = {
   total_saved_cents: number;
   total_progress_percent: number;
 };
+
+export type GoalContribution = {
+  id: string;
+  goal_id: string;
+  workspace_id: string;
+  amount_cents: number;
+  contributed_at: string;
+  notes: string | null;
+  created_by_user_id: string | null;
+  created_at: string;
+};
+
+export type GoalContributionInput = {
+  amount_cents: number;
+  contributed_at?: string | null;
+  notes?: string | null;
+};
