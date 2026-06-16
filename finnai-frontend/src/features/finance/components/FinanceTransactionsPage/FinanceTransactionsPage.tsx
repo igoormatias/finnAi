@@ -178,11 +178,11 @@ export const FinanceTransactionsPage = () => {
             }
             return next;
           });
-          setFormOpen(false);
+          handleFormOpenChange(false);
         }}
         onUpdate={async (id, input) => {
           await updateMutation.mutateAsync({ transactionId: id, input });
-          setFormOpen(false);
+          handleFormOpenChange(false);
         }}
       />
 

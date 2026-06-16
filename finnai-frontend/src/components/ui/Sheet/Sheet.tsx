@@ -37,7 +37,7 @@ export const SheetContent = ({
       <SheetOverlay />
       <DialogPrimitive.Content
         className={cn(
-          "fixed z-50 border border-border bg-surface/90 shadow-elevated backdrop-blur-md",
+          "fixed z-50 border border-border bg-surface/90 shadow-elevated backdrop-blur-md overflow-y-auto overscroll-contain",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-300",
           side === "left"
             ? "left-0 top-0 h-full w-[min(360px,calc(100vw-3rem))] p-4 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left"

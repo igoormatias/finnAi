@@ -76,5 +76,54 @@ describe("TransactionFormSheet", () => {
     );
     expect(screen.getByRole("combobox", { name: "Selecionar conta" })).toHaveTextContent("Nubank");
   });
+
+  it("clears fields when the sheet is cancelled", async () => {
+    const user = userEvent.setup();
+    render(
+      <TransactionFormSheet
+        open
+        onOpenChange={() => {}}
+        editing={null}
+        presetType="expense"
+        categories={categories}
+        accounts={accounts}
+        onCreate={vi.fn().mockResolvedValue(undefined)}
+        onUpdate={vi.fn().mockResolvedValue(undefined)}
+      />
+    );
+
+    const description = screen.getByPlaceholderText("Ex: Starbucks Coffee");
+    await user.type(description, "Almoço");
+    expect(description).toHaveValue("Almoço");
+
+    await user.click(screen.getByRole("button", { name: /Cancelar/i }));
+
+    expect(description).toHaveValue("");
+  });
+
+  it("clears fields when reopened after close", async () => {
+    const user = userEvent.setup();
+    const props = {
+      editing: null,
+      presetType: null,
+      categories,
+      accounts,
+      onCreate: vi.fn().mockResolvedValue(undefined),
+      onUpdate: vi.fn().mockResolvedValue(undefined),
+    };
+
+    const { rerender } = render(
+      <TransactionFormSheet open onOpenChange={() => {}} {...props} />
+    );
+
+    const description = screen.getByPlaceholderText("Ex: Starbucks Coffee");
+    await user.type(description, "Mercado");
+    expect(description).toHaveValue("Mercado");
+
+    rerender(<TransactionFormSheet open={false} onOpenChange={() => {}} {...props} />);
+    rerender(<TransactionFormSheet open onOpenChange={() => {}} {...props} />);
+
+    expect(screen.getByPlaceholderText("Ex: Starbucks Coffee")).toHaveValue("");
+  });
 });
 
