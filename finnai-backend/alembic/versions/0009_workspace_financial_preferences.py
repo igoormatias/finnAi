@@ -1,6 +1,6 @@
 """workspace financial preferences
 
-Revision ID: 0009_workspace_financial_preferences
+Revision ID: 0009_financial_preferences
 Revises: 0008_goal_contributions
 Create Date: 2026-06-16
 
@@ -11,7 +11,7 @@ from __future__ import annotations
 import sqlalchemy as sa
 from alembic import op
 
-revision = "0009_workspace_financial_preferences"
+revision = "0009_financial_preferences"
 down_revision = "0008_goal_contributions"
 branch_labels = None
 depends_on = None
