@@ -7,6 +7,11 @@ import sys
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 
+def _is_render_internal_postgres(host: str) -> bool:
+    """Render internal DB hostnames look like dpg-xxxx-a (no domain suffix)."""
+    return host.startswith("dpg-") and host.endswith("-a") and "." not in host
+
+
 def _convert_scheme(url: str, scheme: str) -> str:
     parsed = urlparse(url)
     if parsed.scheme in {"postgres", "postgresql", "postgresql+asyncpg", "postgresql+psycopg"}:
@@ -52,10 +57,10 @@ def main() -> int:
 
     database_url = _strip_sslmode(database_url)
 
-    database_url_sync = _convert_scheme(database_url_sync, "postgresql+psycopg")
-    database_url_sync = _ensure_sslmode(database_url_sync)
-
     host = urlparse(database_url_sync).hostname or ""
+    database_url_sync = _convert_scheme(database_url_sync, "postgresql+psycopg")
+    if not _is_render_internal_postgres(host):
+        database_url_sync = _ensure_sslmode(database_url_sync)
     if host in {"", "db", "localhost"}:
         print(
             f"ERROR: invalid database host '{host}'. "

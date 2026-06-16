@@ -25,6 +25,10 @@ def _asyncpg_ssl_context() -> ssl.SSLContext:
     return ctx
 
 
+def _is_render_internal_postgres(host: str) -> bool:
+    return host.startswith("dpg-") and host.endswith("-a") and "." not in host
+
+
 def _async_database_url_and_connect_args(
     database_url: str,
     *,
@@ -32,16 +36,17 @@ def _async_database_url_and_connect_args(
 ) -> tuple[str, dict[str, object]]:
     """asyncpg uses connect(ssl=...), not sslmode= in the URL."""
     parsed = urlparse(database_url)
+    host = parsed.hostname or ""
     query = dict(parse_qsl(parsed.query, keep_blank_values=True))
-    connect_args: dict[str, object] = {}
+    connect_args: dict[str, object] = {"server_settings": {"application_name": "finnai-api"}}
 
     sslmode = query.pop("sslmode", None)
     ssl_query = query.pop("ssl", None)
-    if (
-        sslmode == "require"
-        or ssl_query in ("require", "true", "1")
-        or app_env == AppEnvironment.production
-    ):
+    needs_ssl = sslmode == "require" or ssl_query in ("require", "true", "1")
+    if app_env == AppEnvironment.production and not _is_render_internal_postgres(host):
+        needs_ssl = True
+
+    if needs_ssl:
         connect_args["ssl"] = _asyncpg_ssl_context()
 
     cleaned_url = urlunparse(parsed._replace(query=urlencode(query)))
